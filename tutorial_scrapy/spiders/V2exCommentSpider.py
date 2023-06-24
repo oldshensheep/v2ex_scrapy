@@ -2,6 +2,8 @@ import pathlib
 import scrapy
 import scrapy.http.response.html
 
+from .. import utils
+
 
 class V2exCommentSpider(scrapy.Spider):
     name = "replies"
@@ -31,7 +33,7 @@ class V2exCommentSpider(scrapy.Spider):
         reply = response.css(".reply_content").xpath("string(.)").getall()
         for i in range(len(reply)):
             yield {
-                "time": time[i],
+                "time": utils.convert_time(time[i]),
                 "topic_author": topic_author[i],
                 "topic_id": topic_id[i],
                 "topic_go": topic_go[i],
@@ -40,7 +42,7 @@ class V2exCommentSpider(scrapy.Spider):
             }
         self.max_page = int(
             response.css("#Main > div.box > div.header::text")[-1].re_first(
-                r".*共 (\d+) 页$"
+                r".*共 (\d+) 页$", "-1"
             )
         )
         print(self.max_page)

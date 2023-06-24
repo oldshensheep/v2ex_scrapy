@@ -3,10 +3,9 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-from scrapy import signals
-
 # useful for handling different item types with a single interface
-from itemadapter import is_item, ItemAdapter
+from itemadapter import ItemAdapter, is_item
+from scrapy import signals
 
 
 class TutorialScrapySpiderMiddleware:
@@ -60,6 +59,8 @@ class TutorialScrapyDownloaderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
+    def __init__(self):
+        self.proxy = "socks5://127.0.0.1:10809"
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -69,6 +70,8 @@ class TutorialScrapyDownloaderMiddleware:
         return s
 
     def process_request(self, request, spider):
+        if "proxy" not in request.meta:
+            request.meta["proxy"] = self.proxy
         # Called for each request that goes through the downloader
         # middleware.
 
@@ -79,6 +82,9 @@ class TutorialScrapyDownloaderMiddleware:
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
         return None
+
+    def get_proxy(self):
+        return self.proxy
 
     def process_response(self, request, response, spider):
         # Called with the response returned from the downloader.
