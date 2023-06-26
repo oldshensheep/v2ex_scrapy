@@ -1,5 +1,6 @@
 from typing import Union
 import arrow
+import json
 
 
 def convert_time(t: str) -> str:
@@ -16,6 +17,10 @@ def none_or_strip(s: Union[str, None]) -> Union[str, None]:
     if s is not None:
         return s.strip()
     return s
+
+
+def json_to_str(j):
+    return json.dumps(j, ensure_ascii=False)
 
 
 if __name__ == "__main__":

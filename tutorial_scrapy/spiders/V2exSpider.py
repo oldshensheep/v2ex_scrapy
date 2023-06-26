@@ -12,14 +12,18 @@ import tutorial_scrapy.utils as utils
 
 class V2exTopicSpider(scrapy.Spider):
     name = "v2ex"
-    max_tid = 1
+    start_id = 340
+    end_id = 50000
 
     def __init__(self, name=None, **kwargs):
         super().__init__(name, **kwargs)
         self.db = DB()
+        self.start_id = self.db.get_max_topic_id()
+        # self.start_id = 24568
+        self.logger.info(f"start from topic id {self.start_id}, end at {self.end_id}")
 
     def start_requests(self):
-        for i in range(1, self.max_tid + 1):
+        for i in range(self.start_id, self.end_id + 1):
             yield scrapy.Request(
                 url=f"https://www.v2ex.com/t/{i}",
                 callback=self.parse,
@@ -32,10 +36,14 @@ class V2exTopicSpider(scrapy.Spider):
         topic_title = response.css(".header > h1::text").get("")
         topic_time = response.css(".header > small > span::attr(title)").get("")
         topic_author = response.css(".header > small > a::text").get("")
-        topic_go = response.css(".header > a:nth-child(4)::attr(href)").re_first(
-            r"\/(\w+)$"
+        topic_node = response.css(".header > a:nth-child(4)::attr(href)").re_first(
+            r"\/(\w+)$", ""
         )
-        topic_click_count = response.css(".header > small::text").re_first(r"\d+")
+        topic_click_count = response.css(".header > small::text").re_first(r"\d+", "-1")
+        topic_tags = response.css(".tag::attr(href)").re(r"/tag/(.*)")
+        topic_vote = response.xpath('(//a[@class="vote"])[1]/text()').re_first(
+            r"\d+", "0"
+        )
         # need login
         # topic_stats = response.css(".topic_stats::text").re(r"\d+")
         # topic_click_count = topic_stats[0]
@@ -78,14 +86,14 @@ class V2exTopicSpider(scrapy.Spider):
             author=topic_author,
             title=topic_title,
             content=topic_content,
-            create_date=topic_time,
+            create_at=topic_time,
+            node=topic_node,
+            clicks=int(topic_click_count),
+            tag=topic_tags,
+            votes=int(topic_vote),
         )
-        if not self.db.exist(type(MemberItem), topic_author):
-            yield response.follow(
-                f"/member/{topic_author}",
-                callback=self.parse_member,
-                cb_kwargs={"username": topic_author},
-            )
+        for i in self.crawl_member(topic_author, response):
+            yield i
 
     def parse_subpage_comment(
         self,
@@ -109,29 +117,35 @@ class V2exTopicSpider(scrapy.Spider):
         pathlib.Path("filename.html").write_bytes(response.body)
 
     def parse_comment(self, topic_id, response: scrapy.http.response.html.HtmlResponse):
-        reply_box = response.css("#Main > .box > .cell[id]")
+        reply_box = response.css("#Main > .box > .cell[id] > table")
         for reply_row in reply_box:
-            comment_id = reply_row.css(".cell::attr(id)").re_first(r"\d+", "-1")
+            comment_id = (
+                reply_row.xpath("..").css(".cell::attr(id)").re_first(r"\d+", "-1")
+            )
             cbox = reply_row.css("tr")
             author_name = cbox.css(".dark::text").get("-1")
             # avatar_url = cbox.css(".avatar::attr(src)").get("-1")
-            reply_content = cbox.css(".reply_content").xpath("string(.)").get("-1")
-            reply_time = cbox.css(".ago::attr(title)").get("-1")
+            reply_content = cbox.css(".reply_content").xpath("string(.)").get("")
+            reply_time = cbox.css(".ago::attr(title)").get("")
             thank_count = cbox.css(".fade::text").get("0").strip()
             yield CommentItem(
                 id_=int(comment_id),
                 commenter=author_name,
                 topic_id=topic_id,
                 content=reply_content,
-                create_date=reply_time,
+                create_at=reply_time,
+                thank_count=int(thank_count),
             )
+            for i in self.crawl_member(author_name, response):
+                yield i
 
-            if not self.db.exist(type(MemberItem), author_name):
-                yield response.follow(
-                    f"/member/{author_name}",
-                    callback=self.parse_member,
-                    cb_kwargs={"username": author_name},
-                )
+    def crawl_member(self, username, response):
+        if not self.db.exist(MemberItem, username):
+            yield response.follow(
+                f"/member/{username}",
+                callback=self.parse_member,
+                cb_kwargs={"username": username},
+            )
 
     def parse_member(self, response: scrapy.http.response.html.HtmlResponse, username):
         avatar_url = response.css(".avatar::attr(src)").get("-1")
@@ -158,5 +172,4 @@ class V2exTopicSpider(scrapy.Spider):
         social_list = []
         for i in response.xpath('//div[@class="widgets"]//a'):
             social_list.append({i.xpath(".//img/@alt").get(): i.xpath("./@href").get()})
-        social = json.dumps(social_list, ensure_ascii=False)
-        yield MemberItem(username, avatar_url, create_at, social, int(no))
+        yield MemberItem(username, avatar_url, create_at, social_list, int(no))

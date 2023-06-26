@@ -5,7 +5,7 @@
 
 from dataclasses import dataclass
 import sqlite3
-from typing import Union
+from typing import Dict, Type, Union
 
 
 @dataclass
@@ -14,7 +14,11 @@ class TopicItem:
     author: str
     title: str
     content: str
-    create_date: str
+    create_at: str
+    node: str
+    clicks: int
+    tag: list[str]
+    votes: int
 
 
 @dataclass
@@ -23,7 +27,8 @@ class CommentItem:
     topic_id: int
     commenter: str
     content: str
-    create_date: str
+    create_at: str
+    thank_count: int
 
 
 @dataclass
@@ -31,7 +36,7 @@ class MemberItem:
     username: str
     avatar_url: str
     create_at: str
-    social_link: str
+    social_link: list[Dict[str, str]]
     no: int
 
 
@@ -49,8 +54,16 @@ class DB:
     def close(self):
         self.conn.close()
 
-    def exist(self, type_: Union[TopicItem, CommentItem, MemberItem], q) -> bool:
-        return self.a[type(type_)](q)
+    def exist(
+        self, type_: Union[Type[TopicItem], Type[CommentItem], Type[MemberItem]], q
+    ) -> bool:
+        return self.a[type_](q)
+
+    def get_max_topic_id(self) -> int:
+        result = self.cursor.execute("SELECT max(id) FROM topic").fetchone()[0]
+        if result == None:
+            return 1
+        return int(result)
 
     def h_topic(self, q) -> bool:
         # Check if topic exists in the database based on unique identifier (id_)

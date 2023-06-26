@@ -7,6 +7,7 @@
 # useful for handling different item types with a single interface
 import sqlite3
 from typing import Union
+from tutorial_scrapy import utils
 
 from tutorial_scrapy.items import CommentItem, MemberItem, TopicItem
 
@@ -68,23 +69,34 @@ class TutorialScrapyPipeline:
     def save_topic_to_database(self, topic: TopicItem) -> None:
         # Insert the topic data into the table
         self.cursor.execute(
-            """INSERT or IGNORE INTO topic (id, author, title, content, create_date)
-                              VALUES (?, ?, ?, ?, ?)""",
-            (topic.id_, topic.author, topic.title, topic.content, topic.create_date),
+            """INSERT or IGNORE INTO topic (id, author, create_at, title, content, node, clicks, tag, votes)
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                topic.id_,
+                topic.author,
+                topic.create_at,
+                topic.title,
+                topic.content,
+                topic.node,
+                topic.clicks,
+                utils.json_to_str(topic.tag),
+                topic.votes,
+            ),
         )
         self.conn.commit()
 
     def save_comment_to_database(self, comment: CommentItem) -> None:
         # Insert the comment data into the table
         self.cursor.execute(
-            """INSERT or IGNORE INTO comment (id, topic_id, commenter, content, create_date)
-                              VALUES (?, ?, ?, ?, ?)""",
+            """INSERT or IGNORE INTO comment (id, topic_id, commenter, content, create_at, thank_count)
+                              VALUES (?, ?, ?, ?, ?, ?)""",
             (
                 comment.id_,
                 comment.topic_id,
                 comment.commenter,
                 comment.content,
-                comment.create_date,
+                comment.create_at,
+                comment.thank_count,
             ),
         )
         self.conn.commit()
@@ -97,7 +109,7 @@ class TutorialScrapyPipeline:
                 member.username,
                 member.avatar_url,
                 member.create_at,
-                member.social_link,
+                utils.json_to_str(member.social_link),
                 member.no,
             ),
         )
