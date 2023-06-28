@@ -1,4 +1,4 @@
-create table main.comment
+create table if not exists comment
 (
     id          integer not null
         constraint comment_pk
@@ -6,10 +6,11 @@ create table main.comment
     topic_id    integer not null,
     commenter   TEXT    not null,
     content     TEXT    not null,
-    create_date integer not null
+    create_at   integer not null,
+    thank_count integer not null
 );
 
-create table main.member
+create table if not exists member
 (
     username    TEXT    not null
         constraint member_pk
@@ -20,14 +21,20 @@ create table main.member
     no          integer not null
 );
 
-create table main.topic
+create unique index if not exists member_no_uindex
+    on member (no);
+
+create table if not exists topic
 (
-    id          integer not null
+    id        integer not null
         constraint topic_pk
             primary key,
-    author      TEXT    not null,
-    create_date integer not null,
-    title       TEXT    not null,
-    content     integer TEXT
+    author    TEXT    not null,
+    create_at integer not null,
+    title     TEXT    not null,
+    content   integer TEXT,
+    node      TEXT    not null,
+    clicks    integer not null,
+    tag       TEXT    not null,
+    votes     integer
 );
-

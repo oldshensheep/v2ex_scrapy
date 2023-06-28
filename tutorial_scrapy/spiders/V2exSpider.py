@@ -1,6 +1,4 @@
-import json
 import math
-import pathlib
 
 import scrapy
 import scrapy.http.response.html
