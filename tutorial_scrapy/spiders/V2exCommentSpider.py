@@ -33,7 +33,7 @@ class V2exCommentSpider(scrapy.Spider):
         reply = response.css(".reply_content").xpath("string(.)").getall()
         for i in range(len(reply)):
             yield {
-                "time": utils.convert_time(time[i]),
+                "time": utils.time_to_timestamp(time[i]),
                 "topic_author": topic_author[i],
                 "topic_id": topic_id[i],
                 "topic_go": topic_go[i],
