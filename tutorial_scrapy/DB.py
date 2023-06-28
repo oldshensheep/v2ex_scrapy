@@ -17,6 +17,8 @@ class DB:
         # Connect to SQLite database
         self.conn = sqlite3.connect("v2ex.sqlite")
         self.cursor = self.conn.cursor()
+
+        self.create_tables()
         self.a = {
             TopicItem: self.topic_exist,
             CommentItem: self.comment_exist,

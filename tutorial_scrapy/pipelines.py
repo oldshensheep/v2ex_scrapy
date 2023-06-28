@@ -17,8 +17,6 @@ class TutorialScrapyPipeline:
         # Connect to SQLite database
         self.db = DB()
 
-        # Create tables if they don't exist
-        self.db.create_tables()
         self.a = {
             TopicItem: self.handle_topic,
             CommentItem: self.handle_comment,
