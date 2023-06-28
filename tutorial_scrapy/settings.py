@@ -1,3 +1,10 @@
+# My Config
+
+PROXIES = [
+     "socks5://127.0.0.1:10809"
+]
+
+
 # Scrapy settings for tutorial_scrapy project
 #
 # For simplicity, this file contains only settings considered important or
