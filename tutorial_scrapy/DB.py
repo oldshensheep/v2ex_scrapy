@@ -95,8 +95,8 @@ class DB:
     def save_topic_supplement(self, i: TopicSupplementItem) -> None:
         # Insert the topic data into the table
         self.cursor.execute(
-            """INSERT or IGNORE INTO topic (topic_id, content, create_at)
-                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            """INSERT or IGNORE INTO topic_supplement (topic_id, content, create_at)
+                              VALUES (?, ?, ?)""",
             (i.topic_id, i.content, i.create_at),
         )
         self.conn.commit()
