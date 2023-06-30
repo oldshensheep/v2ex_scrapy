@@ -21,6 +21,13 @@ class TopicItem:
 
 
 @dataclass
+class TopicSupplementItem:
+    topic_id: int
+    content: str
+    create_at: int
+
+
+@dataclass
 class CommentItem:
     id_: int
     topic_id: int
@@ -37,5 +44,3 @@ class MemberItem:
     create_at: int
     social_link: list[Dict[str, str]]
     no: int
-
-

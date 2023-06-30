@@ -5,7 +5,12 @@ import scrapy.http.response.html
 
 import tutorial_scrapy.utils as utils
 from tutorial_scrapy.DB import DB
-from tutorial_scrapy.items import CommentItem, MemberItem, TopicItem
+from tutorial_scrapy.items import (
+    CommentItem,
+    MemberItem,
+    TopicItem,
+    TopicSupplementItem,
+)
 
 
 class V2exTopicSpider(scrapy.Spider):
@@ -20,29 +25,35 @@ class V2exTopicSpider(scrapy.Spider):
         self.logger.info(f"start from topic id {self.start_id}, end at {self.end_id}")
 
     def start_requests(self):
-        for i in range(self.start_id, self.end_id + 1):
-            # if not self.db.exist(TopicItem, i):
-            yield scrapy.Request(
-                url=f"https://www.v2ex.com/t/{i}",
-                callback=self.parse,
-                cb_kwargs={"topic_id": i},
-            )
+        yield scrapy.Request(
+            url=f"https://www.v2ex.com/t/{self.start_id}",
+            callback=self.parse,
+            cb_kwargs={"topic_id": self.start_id},
+        )
+        for i in range(self.start_id + 1, self.end_id + 1):
+            if not self.db.exist(TopicItem, i):
+                yield scrapy.Request(
+                    url=f"https://www.v2ex.com/t/{i}",
+                    callback=self.parse,
+                    cb_kwargs={"topic_id": i},
+                )
 
     def parse(self, response: scrapy.http.response.html.HtmlResponse, topic_id: int):
         for topic in self.parse_topic(response, topic_id):
-            for i in self.crawl_member(topic.author, response):
-                yield i
-            for i in self.parse_comment(response, topic_id):
-                yield i
-            topic_reply_count = int(
-                response.css(
-                    "#Main > div:nth-child(4) > div:nth-child(1) > span::text"
-                ).re_first(r"\d+", "-1")
-            )
-            total_page = math.ceil(topic_reply_count / 100)
-            for i in range(2, total_page + 1):
-                for j in self.crawl_comment(topic_id, i, response):
-                    yield j
+            if isinstance(topic, TopicItem):
+                for i in self.crawl_member(topic.author, response):
+                    yield i
+                for i in self.parse_comment(response, topic_id):
+                    yield i
+                topic_reply_count = int(
+                    response.css(
+                        "#Main > div:nth-child(4) > div:nth-child(1) > span::text"
+                    ).re_first(r"\d+", "-1")
+                )
+                total_page = math.ceil(topic_reply_count / 100)
+                for i in range(2, total_page + 1):
+                    for j in self.crawl_comment(topic_id, i, response):
+                        yield j
 
             yield topic
 
@@ -64,7 +75,13 @@ class V2exTopicSpider(scrapy.Spider):
         # topic_favorite_count = topic_stats[1]
         # topic_thank_count = topic_stats[2]
 
-        topic_content = response.css(".topic_content").xpath("string(.)").get("")
+        topic_content = response.css(".cell .topic_content").xpath("string(.)").get("")
+        for i in response.css(".subtle"):
+            subtle_content = i.xpath('div[@class="topic_content"]/text()').get("")
+            subtle_create_at = i.xpath("//span[@title]/text()").get("")
+            yield TopicSupplementItem(
+                topic_id, subtle_content, utils.time_to_timestamp(subtle_create_at)
+            )
         yield TopicItem(
             id_=topic_id,
             author=topic_author,

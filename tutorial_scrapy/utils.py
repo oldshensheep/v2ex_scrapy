@@ -6,11 +6,14 @@ import json
 def time_to_timestamp(t: str) -> int:
     t = t.strip()
     a = None
-    if t[-2:] == "00":
-        a = arrow.get(t, "YYYY-MM-DD HH:mm:ss ZZ")
-    else:
-        a = arrow.utcnow().dehumanize(t.replace(" ", ""), "zh")
-    return int(a.to("+08:00").timestamp())
+    try:
+        if t[-2:] == "00":
+            a = arrow.get(t, "YYYY-MM-DD HH:mm:ss ZZ")
+        else:
+            a = arrow.utcnow().dehumanize(t.replace(" ", ""), "zh")
+        return int(a.to("+08:00").timestamp())
+    except Exception:
+        return 0
 
 
 def none_or_strip(s: Union[str, None]) -> Union[str, None]:

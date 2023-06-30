@@ -2,7 +2,12 @@ import sqlite3
 from typing import Type, Union
 from tutorial_scrapy import utils
 
-from tutorial_scrapy.items import CommentItem, MemberItem, TopicItem
+from tutorial_scrapy.items import (
+    CommentItem,
+    MemberItem,
+    TopicItem,
+    TopicSupplementItem,
+)
 
 
 class DB:
@@ -84,6 +89,15 @@ class DB:
                 utils.json_to_str(topic.tag),
                 topic.votes,
             ),
+        )
+        self.conn.commit()
+
+    def save_topic_supplement(self, i: TopicSupplementItem) -> None:
+        # Insert the topic data into the table
+        self.cursor.execute(
+            """INSERT or IGNORE INTO topic (topic_id, content, create_at)
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (i.topic_id, i.content, i.create_at),
         )
         self.conn.commit()
 

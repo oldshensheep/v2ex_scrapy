@@ -9,7 +9,12 @@
 from typing import Union
 
 from tutorial_scrapy.DB import DB
-from tutorial_scrapy.items import CommentItem, MemberItem, TopicItem
+from tutorial_scrapy.items import (
+    CommentItem,
+    MemberItem,
+    TopicItem,
+    TopicSupplementItem,
+)
 
 
 class TutorialScrapyPipeline:
@@ -21,6 +26,7 @@ class TutorialScrapyPipeline:
             TopicItem: self.handle_topic,
             CommentItem: self.handle_comment,
             MemberItem: self.handle_member,
+            TopicSupplementItem: self.handle_topic_supplement,
         }
 
     def process_item(self, item: Union[TopicItem, CommentItem, MemberItem], spider):
@@ -31,6 +37,11 @@ class TutorialScrapyPipeline:
         # Process topic item
         # Save to SQLite database
         self.db.save_topic(topic)
+
+    def handle_topic_supplement(self, i: TopicSupplementItem) -> None:
+        # Process member item
+        # Save to SQLite database
+        self.db.save_topic_supplement(i)
 
     def handle_comment(self, comment: CommentItem) -> None:
         # Process comment item
