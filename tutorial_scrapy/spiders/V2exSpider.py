@@ -80,7 +80,9 @@ class V2exTopicSpider(scrapy.Spider):
             subtle_content = i.xpath('string(div[@class="topic_content"])').get("")
             subtle_create_at = i.xpath("string(//span[@title])").get("")
             yield TopicSupplementItem(
-                topic_id, subtle_content, utils.time_to_timestamp(subtle_create_at)
+                topic_id=topic_id,
+                content=subtle_content,
+                create_at=utils.time_to_timestamp(subtle_create_at),
             )
         yield TopicItem(
             id_=topic_id,
@@ -158,9 +160,9 @@ class V2exTopicSpider(scrapy.Spider):
         for i in response.xpath('//div[@class="widgets"]//a'):
             social_list.append({i.xpath(".//img/@alt").get(): i.xpath("./@href").get()})
         yield MemberItem(
-            username,
-            avatar_url,
-            utils.time_to_timestamp(create_at),
-            social_list,
-            int(no),
+            username=username,
+            avatar_url=avatar_url,
+            create_at=utils.time_to_timestamp(create_at),
+            social_link=social_list,
+            no=int(no),
         )

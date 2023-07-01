@@ -1,6 +1,7 @@
-from typing import Union
-import arrow
 import json
+from typing import Union
+
+import arrow
 
 
 def time_to_timestamp(t: str) -> int:
