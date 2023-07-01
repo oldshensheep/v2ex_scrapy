@@ -16,7 +16,8 @@ from tutorial_scrapy.items import (
 class V2exTopicSpider(scrapy.Spider):
     name = "v2ex"
     start_id = 1
-    end_id = 500000
+    end_id = 1000000
+    UPDATE = False
 
     def __init__(self, name=None, **kwargs):
         super().__init__(name, **kwargs)
@@ -31,7 +32,7 @@ class V2exTopicSpider(scrapy.Spider):
             cb_kwargs={"topic_id": self.start_id},
         )
         for i in range(self.start_id + 1, self.end_id + 1):
-            if not self.db.exist(TopicItem, i):
+            if self.UPDATE or not self.db.exist(TopicItem, i):
                 yield scrapy.Request(
                     url=f"https://www.v2ex.com/t/{i}",
                     callback=self.parse,
@@ -54,7 +55,6 @@ class V2exTopicSpider(scrapy.Spider):
                 for i in range(2, total_page + 1):
                     for j in self.crawl_comment(topic_id, i, response):
                         yield j
-
             yield topic
 
     def parse_topic(self, response: scrapy.http.response.html.HtmlResponse, topic_id):
@@ -77,8 +77,8 @@ class V2exTopicSpider(scrapy.Spider):
 
         topic_content = response.css(".cell .topic_content").xpath("string(.)").get("")
         for i in response.css(".subtle"):
-            subtle_content = i.xpath('div[@class="topic_content"]/text()').get("")
-            subtle_create_at = i.xpath("//span[@title]/text()").get("")
+            subtle_content = i.xpath('string(div[@class="topic_content"])').get("")
+            subtle_create_at = i.xpath("string(//span[@title])").get("")
             yield TopicSupplementItem(
                 topic_id, subtle_content, utils.time_to_timestamp(subtle_create_at)
             )
@@ -107,21 +107,22 @@ class V2exTopicSpider(scrapy.Spider):
             comment_id = (
                 reply_row.xpath("..").css(".cell::attr(id)").re_first(r"\d+", "-1")
             )
-            cbox = reply_row.css("tr")
-            author_name = cbox.css(".dark::text").get("-1")
-            reply_content = cbox.css(".reply_content").xpath("string(.)").get("")
-            reply_time = cbox.css(".ago::attr(title)").get("")
-            thank_count = cbox.css(".fade::text").get("0").strip()
-            yield CommentItem(
-                id_=int(comment_id),
-                commenter=author_name,
-                topic_id=topic_id,
-                content=reply_content,
-                create_at=utils.time_to_timestamp(reply_time),
-                thank_count=int(thank_count),
-            )
-            for i in self.crawl_member(author_name, response):
-                yield i
+            if not self.db.exist(CommentItem, comment_id):
+                cbox = reply_row.css("tr")
+                author_name = cbox.css(".dark::text").get("-1")
+                reply_content = cbox.css(".reply_content").xpath("string(.)").get("")
+                reply_time = cbox.css(".ago::attr(title)").get("")
+                thank_count = cbox.css(".fade::text").get("0").strip()
+                yield CommentItem(
+                    id_=int(comment_id),
+                    commenter=author_name,
+                    topic_id=topic_id,
+                    content=reply_content,
+                    create_at=utils.time_to_timestamp(reply_time),
+                    thank_count=int(thank_count),
+                )
+                for i in self.crawl_member(author_name, response):
+                    yield i
 
     def crawl_member(self, username, response):
         if not self.db.exist(MemberItem, username):
