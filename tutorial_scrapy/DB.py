@@ -1,5 +1,5 @@
 import sqlite3
-from typing import Type, Union
+from typing import List, Type, Union
 from tutorial_scrapy import utils
 
 from tutorial_scrapy.items import (
@@ -73,60 +73,69 @@ class DB:
 
         return result is not None
 
-    def save_topic(self, topic: TopicItem) -> None:
+    def save_topics(self, topics: List[TopicItem]) -> None:
         # Insert the topic data into the table
-        self.cursor.execute(
+        self.cursor.executemany(
             """INSERT or IGNORE INTO topic (id, author, create_at, title, content, node, clicks, tag, votes)
                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (
-                topic.id_,
-                topic.author,
-                topic.create_at,
-                topic.title,
-                topic.content,
-                topic.node,
-                topic.clicks,
-                utils.json_to_str(topic.tag),
-                topic.votes,
-            ),
+            [
+                (
+                    topic.id_,
+                    topic.author,
+                    topic.create_at,
+                    topic.title,
+                    topic.content,
+                    topic.node,
+                    topic.clicks,
+                    utils.json_to_str(topic.tag),
+                    topic.votes,
+                )
+                for topic in topics
+            ],
         )
         self.conn.commit()
 
-    def save_topic_supplement(self, i: TopicSupplementItem) -> None:
+    def save_topic_supplements(self, i: List[TopicSupplementItem]) -> None:
         # Insert the topic data into the table
-        self.cursor.execute(
+        self.cursor.executemany(
             """INSERT or IGNORE INTO topic_supplement (topic_id, content, create_at)
                               VALUES (?, ?, ?)""",
-            (i.topic_id, i.content, i.create_at),
+            ([(x.topic_id, x.content, x.create_at) for x in i]),
         )
         self.conn.commit()
 
-    def save_comment(self, comment: CommentItem) -> None:
+    def save_comments(self, comments: List[CommentItem]) -> None:
         # Insert the comment data into the table
-        self.cursor.execute(
+        self.cursor.executemany(
             """INSERT or IGNORE INTO comment (id, topic_id, commenter, content, create_at, thank_count)
                               VALUES (?, ?, ?, ?, ?, ?)""",
-            (
-                comment.id_,
-                comment.topic_id,
-                comment.commenter,
-                comment.content,
-                comment.create_at,
-                comment.thank_count,
-            ),
+            [
+                (
+                    comment.id_,
+                    comment.topic_id,
+                    comment.commenter,
+                    comment.content,
+                    comment.create_at,
+                    comment.thank_count,
+                )
+                for comment in comments
+            ],
         )
         self.conn.commit()
 
-    def save_member(self, member: MemberItem) -> None:
-        self.cursor.execute(
+    def save_members(self, members: List[MemberItem]) -> None:
+        self.cursor.executemany(
             """INSERT or IGNORE INTO member (username, avatar_url, create_at, social_link, no)
                               VALUES (?, ?, ?, ?, ?)""",
-            (
-                member.username,
-                member.avatar_url,
-                member.create_at,
-                utils.json_to_str(member.social_link),
-                member.no,
-            ),
+            [
+                (
+                    member.username,
+                    member.avatar_url,
+                    member.create_at,
+                    utils.json_to_str(member.social_link),
+                    member.no,
+                )
+                for member in members
+            ],
         )
         self.conn.commit()
