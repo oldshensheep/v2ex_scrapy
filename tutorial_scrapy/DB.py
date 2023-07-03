@@ -1,3 +1,4 @@
+import json
 import sqlite3
 from typing import List, Type, Union
 
@@ -23,7 +24,11 @@ class DB:
         return cls._instance
 
     def __init__(self):
-        self.engine = create_engine("sqlite:///v2ex.sqlite", echo=False)
+        self.engine = create_engine(
+            "sqlite:///v2ex.sqlite",
+            echo=False,
+            json_serializer=lambda x: json.dumps(x, ensure_ascii=False),
+        )
         Base.metadata.create_all(self.engine)
         self.session = Session(self.engine)
 
