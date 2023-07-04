@@ -50,6 +50,7 @@ pip install -r .\requirements.txt
 scrapy crawl v2ex
 ```
 
+> `scrapy: command not found` 说明没有添加python包的安装位置到环境变量
 ### 注意事项
 
 爬取过程中出现403基本上是因为IP被限制了，等待一段时间即可
