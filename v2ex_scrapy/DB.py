@@ -1,17 +1,14 @@
 import json
-import sqlite3
-from typing import List, Type, Union
+from typing import Type, Union
 
-from sqlalchemy import create_engine, exists, func, select, text
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
-from tutorial_scrapy import utils
-from tutorial_scrapy.items import (
+from v2ex_scrapy.items import (
     Base,
     CommentItem,
     MemberItem,
     TopicItem,
-    TopicSupplementItem,
 )
 
 
@@ -25,7 +22,7 @@ class DB:
 
     def __init__(self):
         self.engine = create_engine(
-            "sqlite:///v2ex.sqlite",
+            "sqlite:///v2ex2.sqlite",
             echo=False,
             json_serializer=lambda x: json.dumps(x, ensure_ascii=False),
         )
@@ -53,6 +50,6 @@ class DB:
 
     def get_max_topic_id(self) -> int:
         result = self.session.execute(text("SELECT max(id) FROM topic")).fetchone()
-        if result is None:
+        if result is None or result[0] is None:
             return 1
         return int(result[0])

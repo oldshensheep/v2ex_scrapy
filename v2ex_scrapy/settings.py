@@ -1,8 +1,6 @@
 # My Config
 
-PROXIES = [
-     "socks5://127.0.0.1:10809"
-]
+PROXIES = []
 
 
 # Scrapy settings for tutorial_scrapy project
@@ -14,12 +12,12 @@ PROXIES = [
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = "tutorial_scrapy"
+BOT_NAME = "v2ex_scrapy"
 
-SPIDER_MODULES = ["tutorial_scrapy.spiders"]
-NEWSPIDER_MODULE = "tutorial_scrapy.spiders"
+SPIDER_MODULES = ["v2ex_scrapy.spiders"]
+NEWSPIDER_MODULE = "v2ex_scrapy.spiders"
 
-LOG_FILE = "scrapy.log"
+LOG_FILE = "v2ex_scrapy.log"
 LOG_FILE_APPEND = False
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -60,7 +58,7 @@ CONCURRENT_REQUESTS = 3
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    "tutorial_scrapy.middlewares.TutorialScrapyDownloaderMiddleware": 543,
+    "v2ex_scrapy.middlewares.TutorialScrapyDownloaderMiddleware": 543,
 }
 
 # Enable or disable extensions
@@ -72,7 +70,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    "tutorial_scrapy.pipelines.TutorialScrapyPipeline": 300,
+    "v2ex_scrapy.pipelines.TutorialScrapyPipeline": 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

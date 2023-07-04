@@ -8,9 +8,10 @@
 
 from typing import Union
 
-import tutorial_scrapy.insert_ignore
-from tutorial_scrapy.DB import DB
-from tutorial_scrapy.items import (
+# don't remove
+import v2ex_scrapy.insert_ignore
+from v2ex_scrapy.DB import DB
+from v2ex_scrapy.items import (
     CommentItem,
     MemberItem,
     TopicItem,

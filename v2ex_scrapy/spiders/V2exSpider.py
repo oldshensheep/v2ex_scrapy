@@ -3,9 +3,9 @@ import math
 import scrapy
 import scrapy.http.response.html
 
-import tutorial_scrapy.utils as utils
-from tutorial_scrapy.DB import DB
-from tutorial_scrapy.items import (
+import v2ex_scrapy.utils as utils
+from v2ex_scrapy.DB import DB
+from v2ex_scrapy.items import (
     CommentItem,
     MemberItem,
     TopicItem,
@@ -17,7 +17,9 @@ class V2exTopicSpider(scrapy.Spider):
     name = "v2ex"
     start_id = 1
     end_id = 1000000
-    UPDATE = False
+    UPDATE_TOPIC = False
+    UPDATE_COMMENT = False
+    UPDATE_MEMBER = False
 
     def __init__(self, name=None, **kwargs):
         super().__init__(name, **kwargs)
@@ -31,8 +33,8 @@ class V2exTopicSpider(scrapy.Spider):
             callback=self.parse,
             cb_kwargs={"topic_id": self.start_id},
         )
-        for i in range(self.start_id + 1, self.end_id + 1):
-            if self.UPDATE or not self.db.exist(TopicItem, i):
+        for i in range(self.start_id, self.end_id + 1):
+            if self.UPDATE_TOPIC or not self.db.exist(TopicItem, i):
                 yield scrapy.Request(
                     url=f"https://www.v2ex.com/t/{i}",
                     callback=self.parse,
@@ -46,15 +48,17 @@ class V2exTopicSpider(scrapy.Spider):
                     yield i
                 for i in self.parse_comment(response, topic_id):
                     yield i
-                topic_reply_count = int(
-                    response.css(
-                        "#Main > div:nth-child(4) > div:nth-child(1) > span::text"
-                    ).re_first(r"\d+", "-1")
-                )
-                total_page = math.ceil(topic_reply_count / 100)
-                for i in range(2, total_page + 1):
-                    for j in self.crawl_comment(topic_id, i, response):
-                        yield j
+                # crawl sub page comment
+                if self.UPDATE_COMMENT or not self.db.exist(TopicItem, topic_id):
+                    topic_reply_count = int(
+                        response.css(
+                            "#Main > div:nth-child(4) > div:nth-child(1) > span::text"
+                        ).re_first(r"\d+", "-1")
+                    )
+                    total_page = math.ceil(topic_reply_count / 100)
+                    for i in range(2, total_page + 1):
+                        for j in self.crawl_comment(topic_id, i, response):
+                            yield j
             yield topic
 
     def parse_topic(self, response: scrapy.http.response.html.HtmlResponse, topic_id):
@@ -126,13 +130,25 @@ class V2exTopicSpider(scrapy.Spider):
                 for i in self.crawl_member(author_name, response):
                     yield i
 
-    def crawl_member(self, username, response):
-        if not self.db.exist(MemberItem, username):
+    def crawl_member(self, username, response: scrapy.http.response.html.HtmlResponse):
+        if username != "" and (
+            self.UPDATE_MEMBER or not self.db.exist(MemberItem, username)
+        ):
             yield response.follow(
                 f"/member/{username}",
                 callback=self.parse_member,
+                errback=self.member_err,
                 cb_kwargs={"username": username},
             )
+
+    def member_err(self, failure):
+        yield MemberItem(
+            username=failure.request.cb_kwargs["username"],
+            avatar_url="",
+            create_at=0,
+            social_link=[],
+            no=-1,
+        )
 
     def parse_member(self, response: scrapy.http.response.html.HtmlResponse, username):
         avatar_url = response.css(".avatar::attr(src)").get("-1")

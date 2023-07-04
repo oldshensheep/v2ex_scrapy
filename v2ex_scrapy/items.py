@@ -4,11 +4,9 @@
 # https://docs.scrapy.org/en/latest/topics/items.html
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Union
 
-import sqlalchemy
-from sqlalchemy import JSON, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import JSON, Integer, Text
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 @dataclass
@@ -26,14 +24,14 @@ class TopicItem(Base):
     __tablename__ = "topic"
 
     id_: Mapped[int] = mapped_column(name="id", primary_key=True)
-    author: Mapped[str]
-    title: Mapped[str]
+    author: Mapped[str] = mapped_column(nullable=False)
+    title: Mapped[str] = mapped_column(nullable=False)
     content: Mapped[str]
-    node: Mapped[str]
-    tag: Mapped[list[str]]
-    clicks: Mapped[int]
-    votes: Mapped[int]
-    create_at: Mapped[int]
+    node: Mapped[str] = mapped_column(nullable=False)
+    tag: Mapped[list[str]] = mapped_column(nullable=False)
+    clicks: Mapped[int] = mapped_column(nullable=False)
+    votes: Mapped[int] = mapped_column(nullable=False)
+    create_at: Mapped[int] = mapped_column(nullable=False)
 
 
 @dataclass(kw_only=True)
@@ -41,8 +39,8 @@ class TopicSupplementItem(Base):
     __tablename__ = "topic_supplement"
 
     topic_id: Mapped[int] = mapped_column(primary_key=True)
-    content: Mapped[str]
-    create_at: Mapped[int]
+    content: Mapped[str] = mapped_column(nullable=False)
+    create_at: Mapped[int] = mapped_column(nullable=False)
 
 
 @dataclass(kw_only=True)
@@ -50,11 +48,11 @@ class CommentItem(Base):
     __tablename__ = "comment"
 
     id_: Mapped[int] = mapped_column(name="id", primary_key=True)
-    topic_id: Mapped[int]
-    commenter: Mapped[str]
-    content: Mapped[str]
-    thank_count: Mapped[int]
-    create_at: Mapped[int]
+    topic_id: Mapped[int] = mapped_column(nullable=False)
+    commenter: Mapped[str] = mapped_column(nullable=False)
+    content: Mapped[str] = mapped_column(nullable=False)
+    thank_count: Mapped[int] = mapped_column(nullable=False)
+    create_at: Mapped[int] = mapped_column(nullable=False)
 
 
 @dataclass(kw_only=True)
@@ -63,6 +61,6 @@ class MemberItem(Base):
 
     username: Mapped[str] = mapped_column(primary_key=True)
     avatar_url: Mapped[str]
-    create_at: Mapped[int]
+    create_at: Mapped[int] = mapped_column(nullable=False)
     social_link: Mapped[list[dict[str, str]]]
-    no: Mapped[int]
+    no: Mapped[int] = mapped_column(nullable=False)

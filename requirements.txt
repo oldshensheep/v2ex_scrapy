@@ -1,0 +1,5 @@
+arrow==1.2.3
+pandas==2.0.1
+plotly==5.14.1
+Scrapy==2.9.0
+SQLAlchemy==2.0.17

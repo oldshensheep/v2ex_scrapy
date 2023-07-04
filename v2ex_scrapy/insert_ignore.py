@@ -1,4 +1,3 @@
-
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.sql import Insert
 
@@ -9,6 +8,7 @@ When imported, automatically make all insert not fail on duplicate keys
 """
 
 
+# modified
 @compiles(Insert, "sqlite")
 def sqlite_insert_ignore(insert, compiler, **kw):
     statement = compiler.visit_insert(insert, **kw)
