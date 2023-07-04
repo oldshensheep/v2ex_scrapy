@@ -22,7 +22,7 @@ class DB:
 
     def __init__(self):
         self.engine = create_engine(
-            "sqlite:///v2ex2.sqlite",
+            "sqlite:///v2ex.sqlite",
             echo=False,
             json_serializer=lambda x: json.dumps(x, ensure_ascii=False),
         )
