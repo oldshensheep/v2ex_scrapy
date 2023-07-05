@@ -58,6 +58,8 @@ scrapy crawl v2ex
 
 ## 统计分析
 
+统计用的SQL在[query.sql](query.sql)这个文件下，图表的源码在[analysis.py](analysis.py)
+
 ### 帖子、评论和用户数量统计
 
 帖子总数：801,038 （80万）  
