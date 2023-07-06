@@ -17,7 +17,7 @@ BOT_NAME = "v2ex_scrapy"
 SPIDER_MODULES = ["v2ex_scrapy.spiders"]
 NEWSPIDER_MODULE = "v2ex_scrapy.spiders"
 
-LOG_FILE = "v2ex_scrapy.log"
+# LOG_FILE = "v2ex_scrapy.log"
 LOG_FILE_APPEND = False
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
