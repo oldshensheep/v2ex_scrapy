@@ -43,7 +43,7 @@ from topic
 group by author
 order by topic_count desc;
 
--- topic number group by year
+-- topic number group by year-month
 SELECT date,
        SUM(topic_count) OVER (ORDER BY date ) AS cumulative_topic_count
 FROM (SELECT strftime('%Y-%m', create_at, 'unixepoch') AS date, COUNT(*) AS topic_count
@@ -51,7 +51,7 @@ FROM (SELECT strftime('%Y-%m', create_at, 'unixepoch') AS date, COUNT(*) AS topi
       GROUP BY date)
 ORDER BY date;
 
--- user number group by year
+-- user number group by year-month
 SELECT date,
        SUM(user_count) OVER (ORDER BY date ) AS cumulative_user_count
 FROM (SELECT strftime('%Y-%m', create_at, 'unixepoch') AS date, COUNT(*) AS user_count
@@ -59,7 +59,7 @@ FROM (SELECT strftime('%Y-%m', create_at, 'unixepoch') AS date, COUNT(*) AS user
       GROUP BY date)
 ORDER BY date;
 
--- comment number group by year
+-- comment number group by year-month
 SELECT date,
        SUM(comment_count) OVER (ORDER BY date ) AS cumulative_comment_count
 FROM (SELECT strftime('%Y-%m', create_at, 'unixepoch') AS date, COUNT(*) AS comment_count
@@ -67,17 +67,17 @@ FROM (SELECT strftime('%Y-%m', create_at, 'unixepoch') AS date, COUNT(*) AS comm
       GROUP BY date)
 ORDER BY date;
 
--- new topic number group by year
+-- new topic number group by year-month
 SELECT strftime('%Y-%m', create_at, 'unixepoch') AS date, COUNT(*) AS topic_count
 FROM topic
 GROUP BY date;
 
--- new user number group by year
+-- new user number group by year-month
 SELECT strftime('%Y-%m', create_at, 'unixepoch') AS date, COUNT(*) AS user_count
 FROM member
 GROUP BY date;
 
--- new comment number group by year
+-- new comment number group by year-month
 SELECT strftime('%Y-%m', create_at, 'unixepoch') AS date, COUNT(*) AS comment_count
 FROM comment
 GROUP BY date;
