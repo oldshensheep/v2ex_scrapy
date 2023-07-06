@@ -62,6 +62,16 @@ scrapy crawl v2ex
 
 > `scrapy: command not found` 说明没有添加python包的安装位置到环境变量
 
+### 接着上次爬
+
+直接运行爬取的命令即可，会自动继续爬。
+
+原理就是查询数据库中最大的topic_id，然后从topic_id开始爬。
+
+```bash
+scrapy crawl v2ex
+```
+
 ### 注意事项
 
 爬取过程中出现403基本上是因为IP被限制了，等待一段时间即可
