@@ -153,26 +153,11 @@ class V2exTopicSpider(scrapy.Spider):
 
     def parse_member(self, response: scrapy.http.response.html.HtmlResponse, username):
         avatar_url = response.css(".avatar::attr(src)").get("-1")
-        Tagline = response.xpath(
-            '//div[@class="cell"]//tr/td/span[@class="bigger"]/text()'
-        ).get("-1")
-        Company = response.xpath('//div[@class="cell"]//tr/td/span/strong/text()').get(
-            "-1"
-        )
-        Work_Title = response.xpath(
-            '//div[@class="cell"]//tr/td/span/strong/following-sibling::text()'
-        ).re_first(r" / (.*)")
-        bio = response.xpath('//*[@id="Main"]/div[2]/div[3]/text()').get()
+
         t = response.xpath('//div[@class="cell"]//tr/td/span[@class="gray"]/text()')
         no = t.re_first(r"第 (\d+) 号", "-1")
         create_at = t.re_first(r"加入于 (.*)", "")
 
-        website = utils.none_or_strip(
-            response.xpath('//*[@alt="Website"]/following-sibling::text()').get()
-        )
-        geo = utils.none_or_strip(
-            response.xpath('//*[@alt="Geo"]/following-sibling::text()').get()
-        )
         social_list = []
         for i in response.xpath('//div[@class="widgets"]//a'):
             social_list.append({i.xpath(".//img/@alt").get(): i.xpath("./@href").get()})
