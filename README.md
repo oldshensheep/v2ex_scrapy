@@ -28,6 +28,8 @@
 
 ## 运行
 
+确保python >=3.10
+
 ### 安装依赖
 
 ```bash
@@ -47,6 +49,10 @@ pip install -r .\requirements.txt
 ```
 
 请求会随机选择一个代理，如果需要更高级的代理方式可以使用第三方库，或者自行实现Middleware
+
+#### LOG
+
+默认关闭了写入Log文件的功能，如需开启修改`v2ex_scrapy\settings.py`中的这行`# LOG_FILE = "v2ex_scrapy.log"`配置文件，取消注释
 
 ### 运行爬虫
 
