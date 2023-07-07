@@ -150,12 +150,6 @@ class SaveHttpStatusToDBMiddleware:
     def __init__(self):
         self.db = DB()
 
-    @classmethod
-    def from_crawler(cls, crawler):
-        s = cls()
-        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
-        return s
-
     def process_response(
         self, request, response: scrapy.http.response.html.HtmlResponse, spider
     ):
