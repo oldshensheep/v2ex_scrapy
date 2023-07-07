@@ -49,4 +49,6 @@ class TutorialScrapyPipeline:
         return item
 
     def close_spider(self, spider):
+        for _, v in self.data.items():
+            self.db.session.add_all(v)
         self.db.close()
