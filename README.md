@@ -42,6 +42,8 @@ pip install -r requirements.txt
 
 ### 配置
 
+默认的并发数设置成了1，如需更改修改`CONCURRENT_REQUESTS`
+
 #### 代理
 
 更改 `v2ex_scrapy/settings.py` 中 `PROXIES`的值 如
