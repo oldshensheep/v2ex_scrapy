@@ -37,7 +37,7 @@
 ### 安装依赖
 
 ```bash
-pip install -r .\requirements.txt
+pip install -r requirements.txt
 ```
 
 ### 配置
@@ -79,6 +79,8 @@ scrapy crawl v2ex
 ### 注意事项
 
 爬取过程中出现403基本上是因为IP被限制了，等待一段时间即可
+
+代码更新后不能继续用我之前的数据库爬了。表结构改了，topic_content爬取的内容改为完整的HTML而不是只有文本内容。
 
 ## 统计分析
 

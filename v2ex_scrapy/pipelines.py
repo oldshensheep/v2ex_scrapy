@@ -6,7 +6,7 @@
 
 # useful for handling different item types with a single interface
 
-from typing import Union
+from typing import Any, Union
 
 # don't remove
 import v2ex_scrapy.insert_ignore
@@ -18,6 +18,8 @@ from v2ex_scrapy.items import (
     TopicSupplementItem,
 )
 
+ItemsType = Union[TopicItem, CommentItem, MemberItem, TopicSupplementItem]
+
 
 class TutorialScrapyPipeline:
     BATCH = 10
@@ -25,33 +27,26 @@ class TutorialScrapyPipeline:
     def __init__(self):
         # Connect to SQLite database
         self.db = DB()
-        self.a = {
-            TopicItem: "topics",
-            CommentItem: "comments",
-            MemberItem: "members",
-            TopicSupplementItem: "topic_supplements",
+        self.data: dict[Any, list[ItemsType]] = {
+            TopicItem: [],
+            CommentItem: [],
+            MemberItem: [],
+            TopicSupplementItem: [],
         }
-        self.topics = []
-        self.comments = []
-        self.members = []
-        self.topic_supplements = []
 
-    def process_item(self, item: Union[TopicItem, CommentItem, MemberItem], spider):
-        attr_name = self.a[type(item)]
-        attr = getattr(self, attr_name)
-
-        attr.append(item)
-
-        if len(attr) >= self.BATCH:
-            self.db.session.add_all(attr)
-            setattr(self, attr_name, [])
-            self.db.session.commit()
+    def process_item(
+        self,
+        item: Union[ItemsType, Any],
+        spider,
+    ):
+        if isinstance(item, (TopicItem, CommentItem, MemberItem, TopicSupplementItem)):
+            item_type = type(item)
+            self.data[item_type].append(item)
+            if len(self.data[item_type]) >= self.BATCH:
+                self.db.session.add_all(self.data[item_type])
+                self.data[item_type] = []
+                self.db.session.commit()
         return item
 
     def close_spider(self, spider):
-        self.db.session.add_all(self.topics)
-        self.db.session.add_all(self.topic_supplements)
-        self.db.session.add_all(self.members)
-        self.db.session.add_all(self.comments)
-
         self.db.close()

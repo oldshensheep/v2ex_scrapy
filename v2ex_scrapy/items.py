@@ -32,6 +32,24 @@ class TopicItem(Base):
     clicks: Mapped[int] = mapped_column(nullable=False)
     votes: Mapped[int] = mapped_column(nullable=False)
     create_at: Mapped[int] = mapped_column(nullable=False)
+    thank_count: Mapped[int] = mapped_column(nullable=False)
+    favorite_count: Mapped[int] = mapped_column(nullable=False)
+
+    @classmethod
+    def err_topic(cls, topic_id: int):
+        return TopicItem(
+            id_=topic_id,
+            author="",
+            title="",
+            content="",
+            create_at=0,
+            node="",
+            tag=[],
+            clicks=-1,
+            votes=-1,
+            thank_count=-1,
+            favorite_count=-1,
+        )
 
 
 @dataclass(kw_only=True)
@@ -48,7 +66,8 @@ class CommentItem(Base):
     __tablename__ = "comment"
 
     id_: Mapped[int] = mapped_column(name="id", primary_key=True)
-    topic_id: Mapped[int] = mapped_column(nullable=False)
+    # used for select count(*) from comment where topic_id = ?, see DB.get_topic_comment_count
+    topic_id: Mapped[int] = mapped_column(nullable=False, index=True)
     commenter: Mapped[str] = mapped_column(nullable=False)
     content: Mapped[str] = mapped_column(nullable=False)
     thank_count: Mapped[int] = mapped_column(nullable=False)
@@ -58,9 +77,12 @@ class CommentItem(Base):
 @dataclass(kw_only=True)
 class MemberItem(Base):
     __tablename__ = "member"
-
-    username: Mapped[str] = mapped_column(primary_key=True)
+    """
+    crawl user from topic and comment, then crawl from uid 1 to 1000000,
+    if get 404, username/uid will be ''/-1, so primary_key(uid ,username)
+    """
+    uid: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(primary_key=True, index=True)
     avatar_url: Mapped[str]
     create_at: Mapped[int] = mapped_column(nullable=False)
     social_link: Mapped[list[dict[str, str]]]
-    no: Mapped[int] = mapped_column(nullable=False)
