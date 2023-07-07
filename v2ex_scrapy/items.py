@@ -57,8 +57,8 @@ class TopicSupplementItem(Base):
     __tablename__ = "topic_supplement"
 
     topic_id: Mapped[int] = mapped_column(primary_key=True)
-    content: Mapped[str] = mapped_column(nullable=False)
-    create_at: Mapped[int] = mapped_column(nullable=False)
+    content: Mapped[str] = mapped_column(primary_key=True)
+    create_at: Mapped[int] = mapped_column(primary_key=True)
 
 
 @dataclass(kw_only=True)
