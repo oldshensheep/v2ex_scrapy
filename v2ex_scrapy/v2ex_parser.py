@@ -39,7 +39,7 @@ def parse_comment(response: scrapy.http.response.html.HtmlResponse, topic_id):
         # if not self.db.exist(CommentItem, comment_id):
         cbox = reply_row.css("tr")
         author_name = cbox.css(".dark::text").get("-1")
-        reply_content = cbox.css(".reply_content").xpath("string(.)").get("")
+        reply_content = cbox.xpath('.//div[@class="reply_content"]').get("")
         reply_time = cbox.css(".ago::attr(title)").get("")
         thank_count = cbox.css(".fade::text").get("0").strip()
         yield CommentItem(
@@ -62,14 +62,16 @@ def parse_topic(response: scrapy.http.response.html.HtmlResponse, topic_id):
     topic_click_count = response.css(".header > small::text").re_first(r"\d+", "-1")
     topic_tags = response.css(".tag::attr(href)").re(r"/tag/(.*)")
     topic_vote = response.xpath('(//a[@class="vote"])[1]/text()').re_first(r"\d+", "0")
-    # need login, some topics may not have this
+    # need login, some topics may not have
     topic_favorite_count = -1
     topic_thank_count = -1
-    topic_stats = response.css(".topic_stats::text").re(r"\d+")
-    if len(topic_stats) == 3:
-        # topic_click_count = topic_stats[0]
-        topic_favorite_count = topic_stats[1]
-        topic_thank_count = topic_stats[2]
+    if response.css(".topic_stats::text").get() is not None:
+        topic_favorite_count = response.css(".topic_stats::text").re_first(
+            r"(\d+) 人收藏", "0"
+        )
+        topic_thank_count = response.css(".topic_stats::text").re_first(
+            r"(\d+) 人感谢", "0"
+        )
 
     topic_content = response.css(".cell .topic_content").get("")
 
