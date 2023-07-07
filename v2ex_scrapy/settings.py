@@ -23,7 +23,7 @@ NEWSPIDER_MODULE = "v2ex_scrapy.spiders"
 LOG_FILE_APPEND = False
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-# USER_AGENT = "Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"
+USER_AGENT = "Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -61,7 +61,7 @@ CONCURRENT_REQUESTS = 3
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     "v2ex_scrapy.middlewares.ProxyAndCookieDownloaderMiddleware": 543,
-    "v2ex_scrapy.middlewares.RandomUserAgentMiddleware": 544,
+    # "v2ex_scrapy.middlewares.RandomUserAgentMiddleware": 544,
     "v2ex_scrapy.middlewares.SaveHttpStatusToDBMiddleware": 545,
 }
 
