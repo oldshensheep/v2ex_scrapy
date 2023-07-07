@@ -1,15 +1,21 @@
 import json
+from dataclasses import dataclass
 from typing import Type, Union
 
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Mapped, Session, mapped_column
 
-from v2ex_scrapy.items import (
-    Base,
-    CommentItem,
-    MemberItem,
-    TopicItem,
-)
+from v2ex_scrapy.items import Base, CommentItem, MemberItem, TopicItem
+
+
+@dataclass(kw_only=True)
+class LogItem(Base):
+    __tablename__ = "log"
+
+    id_: Mapped[int] = mapped_column(name="id", primary_key=True, autoincrement="auto")
+    url: Mapped[str] = mapped_column()
+    status_code: Mapped[int] = mapped_column(nullable=False)
+    create_at: Mapped[int] = mapped_column(nullable=False)
 
 
 class DB:

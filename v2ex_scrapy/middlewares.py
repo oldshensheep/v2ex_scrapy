@@ -6,9 +6,14 @@
 # useful for handling different item types with a single interface
 
 import random
+import time
+from http.cookies import SimpleCookie
 
 import scrapy
+import scrapy.http.response.html
 from scrapy import signals
+
+from v2ex_scrapy.DB import DB, LogItem
 
 
 class TutorialScrapySpiderMiddleware:
@@ -58,12 +63,13 @@ class TutorialScrapySpiderMiddleware:
         spider.logger.info("Spider opened: %s" % spider.name)
 
 
-class TutorialScrapyDownloaderMiddleware:
+class ProxyAndCookieDownloaderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
     def __init__(self):
         self.proxies: list[str] = []
+        self.cookies: dict[str, str] = {}
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -72,9 +78,11 @@ class TutorialScrapyDownloaderMiddleware:
         crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
         return s
 
-    def process_request(self, request, spider):
+    def process_request(self, request: scrapy.Request, spider):
         if "proxy" not in request.meta and len(self.proxies) > 0:
             request.meta["proxy"] = random.choice(self.proxies)
+        if self.cookies != {} and request.cookies == {}:
+            request.cookies = self.cookies
         # Called for each request that goes through the downloader
         # middleware.
 
@@ -86,7 +94,9 @@ class TutorialScrapyDownloaderMiddleware:
         #   installed downloader middleware will be called
         return None
 
-    def process_response(self, request, response, spider):
+    def process_response(
+        self, request, response: scrapy.http.response.html.HtmlResponse, spider
+    ):
         # Called with the response returned from the downloader.
 
         # Must either;
@@ -107,4 +117,52 @@ class TutorialScrapyDownloaderMiddleware:
 
     def spider_opened(self, spider: scrapy.Spider):
         self.proxies = spider.settings.get("PROXIES", [])  # type: ignore
+
+        if type(cookie_str := spider.settings.get("COOKIES", "")) == str:
+            simple_cookie = SimpleCookie()
+            simple_cookie.load(cookie_str)  # type: ignore
+            self.cookies = {k: v.value for k, v in simple_cookie.items()}
+
         spider.logger.info("Spider opened: %s" % spider.name)
+
+
+class RandomUserAgentMiddleware:
+    def __init__(self):
+        self.user_agents: list[str] = []
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        s = cls()
+        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
+        return s
+
+    def process_request(self, request: scrapy.Request, spider):
+        if len(self.user_agents) > 0:
+            request.headers[b"User-Agent"] = random.choice(self.user_agents)
+        return None
+
+    def spider_opened(self, spider: scrapy.Spider):
+        with open("./user-agents.txt") as f:
+            self.user_agents = f.read().splitlines()
+
+
+class SaveHttpStatusToDBMiddleware:
+    def __init__(self):
+        self.db = DB()
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        s = cls()
+        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
+        return s
+
+    def process_response(
+        self, request, response: scrapy.http.response.html.HtmlResponse, spider
+    ):
+        url = response.url
+        status_code = response.status
+        create_at = int(time.time())
+        self.db.session.add(
+            LogItem(url=url, status_code=status_code, create_at=create_at)
+        )
+        return response
