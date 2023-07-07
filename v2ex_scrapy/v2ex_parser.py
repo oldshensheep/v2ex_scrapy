@@ -59,7 +59,7 @@ def parse_topic(response: scrapy.http.response.html.HtmlResponse, topic_id):
     topic_node = response.css(".header > a:nth-child(4)::attr(href)").re_first(
         r"\/(\w+)$", ""
     )
-    topic_click_count = response.css(".header > small::text").re_first(r"\d+", "-1")
+    topic_click_count = response.css(".header > small::text").re_first(r"\d+", "0")
     topic_tags = response.css(".tag::attr(href)").re(r"/tag/(.*)")
     topic_vote = response.xpath('(//a[@class="vote"])[1]/text()').re_first(r"\d+", "-1")
     # need login
