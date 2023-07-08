@@ -35,8 +35,8 @@ class TopicItem(Base):
     thank_count: Mapped[int] = mapped_column(nullable=False)
     favorite_count: Mapped[int] = mapped_column(nullable=False)
 
-    @classmethod
-    def err_topic(cls, topic_id: int):
+    @staticmethod
+    def err_topic(topic_id: int):
         return TopicItem(
             id_=topic_id,
             author="",
