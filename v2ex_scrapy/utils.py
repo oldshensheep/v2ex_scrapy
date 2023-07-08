@@ -1,3 +1,4 @@
+from http.cookies import SimpleCookie
 import json
 from typing import Union
 
@@ -25,6 +26,12 @@ def none_or_strip(s: Union[str, None]) -> Union[str, None]:
 
 def json_to_str(j):
     return json.dumps(j, ensure_ascii=False)
+
+
+def cookie_str2cookie_dict(cookie_str: str):
+    simple_cookie = SimpleCookie()
+    simple_cookie.load(cookie_str)
+    return {k: v.value for k, v in simple_cookie.items()}
 
 
 if __name__ == "__main__":

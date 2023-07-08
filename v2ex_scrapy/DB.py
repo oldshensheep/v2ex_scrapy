@@ -26,9 +26,9 @@ class DB:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, database_name="v2ex.sqlite"):
         self.engine = create_engine(
-            "sqlite:///v2ex.sqlite",
+            f"sqlite:///{database_name}",
             echo=False,
             json_serializer=lambda x: json.dumps(x, ensure_ascii=False),
         )
@@ -61,7 +61,7 @@ class DB:
 
     def get_topic_comment_count(self, topic_id) -> int:
         result = self.session.execute(
-            text("select count(*) from comment where topic_id = :q"), {"q": topic_id}
+            text("select reply_count from topic where id = :q"), {"q": topic_id}
         ).fetchone()
         if result is None or result[0] is None:
             return 0

@@ -42,8 +42,10 @@ def parse_comment(response: scrapy.http.response.html.HtmlResponse, topic_id):
         reply_content = cbox.xpath('.//div[@class="reply_content"]').get("")
         reply_time = cbox.css(".ago::attr(title)").get("")
         thank_count = cbox.css(".fade::text").get("0").strip()
+        no = cbox.css(".no::text").get("-1").strip()
         yield CommentItem(
             id_=int(comment_id),
+            no=int(no),
             commenter=author_name,
             topic_id=topic_id,
             content=reply_content,
@@ -74,7 +76,9 @@ def parse_topic(response: scrapy.http.response.html.HtmlResponse, topic_id):
         )
 
     topic_content = response.css(".cell .topic_content").get("")
-
+    topic_reply_count = response.css(".box > .cell > .gray::text").re_first(
+        r"(\d+) 条回复", "0"
+    )
     yield TopicItem(
         id_=topic_id,
         author=topic_author,
@@ -87,6 +91,7 @@ def parse_topic(response: scrapy.http.response.html.HtmlResponse, topic_id):
         votes=int(topic_vote),
         thank_count=int(topic_thank_count),
         favorite_count=int(topic_favorite_count),
+        reply_count=int(topic_reply_count),
     )
 
 

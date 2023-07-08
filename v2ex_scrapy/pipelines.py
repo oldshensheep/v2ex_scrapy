@@ -11,12 +11,7 @@ from typing import Any, Union
 # don't remove
 import v2ex_scrapy.insert_ignore
 from v2ex_scrapy.DB import DB
-from v2ex_scrapy.items import (
-    CommentItem,
-    MemberItem,
-    TopicItem,
-    TopicSupplementItem,
-)
+from v2ex_scrapy.items import CommentItem, MemberItem, TopicItem, TopicSupplementItem
 
 ItemsType = Union[TopicItem, CommentItem, MemberItem, TopicSupplementItem]
 
@@ -48,7 +43,11 @@ class TutorialScrapyPipeline:
                 self.db.session.commit()
         return item
 
-    def close_spider(self, spider):
+    def save_all(self):
         for _, v in self.data.items():
             self.db.session.add_all(v)
+            self.db.session.commit()
+
+    def close_spider(self, spider):
+        self.save_all()
         self.db.close()

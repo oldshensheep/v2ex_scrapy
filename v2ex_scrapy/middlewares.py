@@ -7,13 +7,13 @@
 
 import random
 import time
-from http.cookies import SimpleCookie
 
 import scrapy
 import scrapy.http.response.html
 from scrapy import signals
-
+from scrapy.exceptions import IgnoreRequest
 from v2ex_scrapy.DB import DB, LogItem
+from v2ex_scrapy import utils
 
 
 class TutorialScrapySpiderMiddleware:
@@ -95,10 +95,14 @@ class ProxyAndCookieDownloaderMiddleware:
         return None
 
     def process_response(
-        self, request, response: scrapy.http.response.html.HtmlResponse, spider
+        self,
+        request: scrapy.Request,
+        response: scrapy.http.response.html.HtmlResponse,
+        spider: scrapy.Spider,
     ):
         # Called with the response returned from the downloader.
-
+        if response.status == 403:
+            raise IgnoreRequest(f"403 url {response.url}")
         # Must either;
         # - return a Response object
         # - return a Request object
@@ -118,10 +122,8 @@ class ProxyAndCookieDownloaderMiddleware:
     def spider_opened(self, spider: scrapy.Spider):
         self.proxies = spider.settings.get("PROXIES", [])  # type: ignore
 
-        if type(cookie_str := spider.settings.get("COOKIES", "")) == str:
-            simple_cookie = SimpleCookie()
-            simple_cookie.load(cookie_str)  # type: ignore
-            self.cookies = {k: v.value for k, v in simple_cookie.items()}
+        cookie_str = spider.settings.get("COOKIES", "")
+        self.cookies = utils.cookie_str2cookie_dict(cookie_str) # type: ignore
 
         spider.logger.info("Spider opened: %s" % spider.name)
 

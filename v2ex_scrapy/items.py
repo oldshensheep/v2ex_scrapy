@@ -26,7 +26,7 @@ class TopicItem(Base):
     id_: Mapped[int] = mapped_column(name="id", primary_key=True)
     author: Mapped[str] = mapped_column(nullable=False)
     title: Mapped[str] = mapped_column(nullable=False)
-    content: Mapped[str]
+    content: Mapped[str] = mapped_column()
     node: Mapped[str] = mapped_column(nullable=False)
     tag: Mapped[list[str]] = mapped_column(nullable=False)
     clicks: Mapped[int] = mapped_column(nullable=False)
@@ -34,6 +34,7 @@ class TopicItem(Base):
     create_at: Mapped[int] = mapped_column(nullable=False)
     thank_count: Mapped[int] = mapped_column(nullable=False)
     favorite_count: Mapped[int] = mapped_column(nullable=False)
+    reply_count: Mapped[int] = mapped_column(nullable=False)
 
     @staticmethod
     def err_topic(topic_id: int):
@@ -49,6 +50,7 @@ class TopicItem(Base):
             votes=-1,
             thank_count=-1,
             favorite_count=-1,
+            reply_count=-1,
         )
 
 
@@ -72,6 +74,7 @@ class CommentItem(Base):
     content: Mapped[str] = mapped_column(nullable=False)
     thank_count: Mapped[int] = mapped_column(nullable=False)
     create_at: Mapped[int] = mapped_column(nullable=False)
+    no: Mapped[int] = mapped_column(nullable=False)
 
 
 @dataclass(kw_only=True)

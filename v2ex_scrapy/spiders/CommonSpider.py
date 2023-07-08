@@ -9,13 +9,10 @@ from v2ex_scrapy.items import MemberItem, TopicItem
 
 
 class CommonSpider:
-    def __init__(
-        self, logger, update_topic=False, update_member=False, update_comment=False
-    ):
+    def __init__(self, logger, update_member=False, update_comment=False):
         self.db = DB()
         self.logger = logger
         self.UPDATE_MEMBER = update_member
-        # only work when UPDATE_TOPIC
         self.UPDATE_COMMENT = update_comment
 
     def parse_topic_err(self, failure):
