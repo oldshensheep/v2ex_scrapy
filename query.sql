@@ -1,18 +1,24 @@
-select count(*)
-from comment;
+SELECT (SELECT COUNT(*) FROM comment) AS 评论数,
+       (SELECT COUNT(*) FROM member)  AS 用户数,
+       (SELECT COUNT(*) FROM topic)   AS 主题数;
+
 -- where create_at between strftime('%s', '2013-01-01') and strftime('%s', '2014-12-31');
 
-select count(*)
-from member;
-
-select count(*)
-from topic;
-
 -- top comment by thank_count
-select topic_id, c.id, thank_count
+select topic_id, c.id, c.content, c.thank_count, c.no, t.title
 from comment c
          left join topic t on t.id = c.topic_id
+order by c.thank_count desc;
+
+-- top topic by thank_count
+select id, title, votes
+from topic
 order by thank_count desc;
+
+-- top topic by favorite_count
+select id, title, favorite_count
+from topic
+order by favorite_count desc;
 
 -- top topic by votes
 select id, title, votes
@@ -32,13 +38,13 @@ group by node
 order by count desc;
 
 -- comment number group by user
-select commenter, count(commenter) as comment_count
+select commenter as username, count(commenter) as comment_count
 from comment
 group by commenter
 order by comment_count desc;
 
 -- topic number group by user
-select author, count(author) as topic_count
+select author as username, count(author) as topic_count
 from topic
 group by author
 order by topic_count desc;
