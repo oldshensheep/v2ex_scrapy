@@ -3,8 +3,8 @@ name: Deploy GitHub Pages
 
 on:
   # Runs on pushes targeting the default branch
-  push:
-    branches: ["main"]
+  # push:
+  #   branches: ["main"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -37,7 +37,7 @@ jobs:
         run: |
           cd analysis/v2ex-analysis
           pnpm install
-          pnpm build
+          pnpm vite build --base=/v2ex_scrapy
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
