@@ -88,6 +88,10 @@ scrapy crawl v2ex
 
 统计用的SQL在[query.sql](query.sql)这个文件下，图表的源码在[analysis.py](analysis.py)
 
+第一次的分析见 <https://www.v2ex.com/t/954480>
+
+水深火热见<https://oldshensheep.github.io/v2ex_scrapy>
+
 ### 帖子、评论和用户数量统计
 
 帖子总数：801,038 （80万）  
