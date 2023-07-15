@@ -8,8 +8,6 @@ from v2ex_scrapy.spiders.CommonSpider import CommonSpider
 
 class V2exTopicSpider(scrapy.Spider):
     name = "v2ex"
-    start_id = 1
-    end_id = 1000000
     UPDATE_TOPIC = False
     # only work when UPDATE_TOPIC = True
     UPDATE_COMMENT = True
@@ -17,7 +15,8 @@ class V2exTopicSpider(scrapy.Spider):
     def __init__(self, name=None, **kwargs):
         super().__init__(name, **kwargs)
         self.db = DB()
-        self.start_id = self.db.get_max_topic_id()
+        self.start_id = 1
+        self.end_id = 1000000
         self.common_spider = CommonSpider(
             self.logger, update_comment=self.UPDATE_COMMENT
         )
