@@ -2,6 +2,7 @@ import math
 
 import scrapy
 import scrapy.http.response.html
+from scrapy.spidermiddlewares.httperror import HttpError
 
 from v2ex_scrapy import v2ex_parser
 from v2ex_scrapy.DB import DB
@@ -18,7 +19,7 @@ class CommonSpider:
     def parse_topic_err(self, failure):
         topic_id = failure.request.cb_kwargs["topic_id"]
         self.logger.warn(f"Crawl Topic Err {topic_id}")
-        if failure.request.status != 403:
+        if failure.value.response.status != 403:
             yield TopicItem.err_topic(topic_id=topic_id)
 
     def parse_topic(
@@ -86,7 +87,7 @@ class CommonSpider:
     def member_err(self, failure):
         username = failure.request.cb_kwargs["username"]
         self.logger.warn(f"Crawl Member Err {username}")
-        if failure.request.status != 403:
+        if failure.value.response.status != 403:
             yield MemberItem(
                 username=username,
                 avatar_url="",
