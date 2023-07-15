@@ -18,7 +18,8 @@ class CommonSpider:
     def parse_topic_err(self, failure):
         topic_id = failure.request.cb_kwargs["topic_id"]
         self.logger.warn(f"Crawl Topic Err {topic_id}")
-        yield TopicItem.err_topic(topic_id=topic_id)
+        if failure.request.status != 403:
+            yield TopicItem.err_topic(topic_id=topic_id)
 
     def parse_topic(
         self, response: scrapy.http.response.html.HtmlResponse, topic_id: int
@@ -85,13 +86,14 @@ class CommonSpider:
     def member_err(self, failure):
         username = failure.request.cb_kwargs["username"]
         self.logger.warn(f"Crawl Member Err {username}")
-        yield MemberItem(
-            username=username,
-            avatar_url="",
-            create_at=0,
-            social_link=[],
-            uid=-1,
-        )
+        if failure.request.status != 403:
+            yield MemberItem(
+                username=username,
+                avatar_url="",
+                create_at=0,
+                social_link=[],
+                uid=-1,
+            )
 
     def parse_member(
         self, response: scrapy.http.response.html.HtmlResponse, username: str
