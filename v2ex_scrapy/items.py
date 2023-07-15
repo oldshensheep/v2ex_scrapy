@@ -3,17 +3,32 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/items.html
 
+import json
 from dataclasses import dataclass
 
-from sqlalchemy import JSON, Integer, Text
+from sqlalchemy import Integer, Text, types
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+class JSONText(types.TypeDecorator):
+    impl = types.Text
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = json.dumps(value, ensure_ascii=False)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = json.loads(value)
+        return value
 
 
 @dataclass
 class Base(DeclarativeBase):
     type_annotation_map = {
-        list[str]: JSON,
-        list[dict[str, str]]: JSON,
+        list[str]: JSONText,
+        list[dict[str, str]]: JSONText,
         int: Integer,
         str: Text,
     }
@@ -68,7 +83,7 @@ class CommentItem(Base):
     __tablename__ = "comment"
 
     id_: Mapped[int] = mapped_column(name="id", primary_key=True)
-    # used for select count(*) from comment where topic_id = ?, see DB.get_topic_comment_count
+    # index used for select count(*) from comment where topic_id = ?, see DB.get_topic_comment_count
     topic_id: Mapped[int] = mapped_column(nullable=False, index=True)
     commenter: Mapped[str] = mapped_column(nullable=False)
     content: Mapped[str] = mapped_column(nullable=False)
