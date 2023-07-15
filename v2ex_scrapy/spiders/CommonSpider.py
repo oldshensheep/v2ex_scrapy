@@ -17,9 +17,9 @@ class CommonSpider:
         self.UPDATE_COMMENT = update_comment
 
     def parse_topic_err(self, failure):
-        topic_id = failure.request.cb_kwargs["topic_id"]
-        self.logger.warn(f"Crawl Topic Err {topic_id}")
-        if failure.value.response.status != 403:
+        if failure.check(HttpError):
+            topic_id = failure.request.cb_kwargs["topic_id"]
+            self.logger.warn(f"Crawl Topic Err {topic_id}")
             yield TopicItem.err_topic(topic_id=topic_id)
 
     def parse_topic(
@@ -85,9 +85,9 @@ class CommonSpider:
             )
 
     def member_err(self, failure):
-        username = failure.request.cb_kwargs["username"]
-        self.logger.warn(f"Crawl Member Err {username}")
-        if failure.value.response.status != 403:
+        if failure.check(HttpError):
+            username = failure.request.cb_kwargs["username"]
+            self.logger.warn(f"Crawl Member Err {username}")
             yield MemberItem(
                 username=username,
                 avatar_url="",
