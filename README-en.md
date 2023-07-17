@@ -1,54 +1,55 @@
-中文 | [English](./README-en.md)
+[中文](./README.md) | English
+Translated by ChatGPT
 
-# 一个爬取v2ex.com网站的爬虫
+# A Web Crawler for v2ex.com
 
-学习scrapy写的一个小爬虫
+This is a small crawler I wrote to scrape data from the v2ex.com website using the Scrapy framework.
 
-数据都放在了sqlite数据库，方便分享，整个数据库大小2.1GB。
+The data is stored in an SQLite database, making it convenient for sharing. The entire database size is 2.1GB.
 
-在GitHub我 release 了完整的sqlite数据库文件
+I have released the complete SQLite database file on GitHub.
 
-## 不建议自行运行爬虫，数据已经有了
+## Note: I do not recommend running the crawler again, as the data is already available
 
-爬取花了几十小时，因为爬快了会封禁IP，并且我也没使用代理池。并发数设置为3基本上可以一直爬。
+The crawling process took several dozen hours. If you crawl too fast, your IP may be banned, and I didn't use a proxy pool. Setting the concurrency to 3 allows you to crawl continuously.
 
-[下载数据库](https://github.com/oldshensheep/v2ex_scrapy/releases)
+[Download the database](https://github.com/oldshensheep/v2ex_scrapy/releases)
 
-## 爬取相关数据说明
+## Explanation of Crawled Data
 
-爬虫从`topic_id = 1`开始爬，路径为`https://www.v2ex.com/t/{topic_id}`。 服务器可能返回404/403/302/200，如果是404说明帖子被删除了，如果是403说明是爬虫被限制了，302一般是跳转到登陆页面，有的也是跳转到主页，200返回正常页面。
+The crawler starts crawling from `topic_id = 1`, with the path as `https://www.v2ex.com/t/{topic_id}`. The server may return 404/403/302/200 status codes. If it's 404, the post has been deleted. If it's 403, the crawler is restricted. A 302 is usually a redirect to a login page or homepage, while 200 indicates a normal page.
 
-爬虫没有登陆，所以爬取的数据不完全，比如水下火热的帖子就没有爬到，还有就是如果是302的帖子会记录帖子id，404/403不会记录。
+Since the crawler doesn't log in, the data collected may not be complete. For example, some popular posts with many replies might not have been crawled. Additionally, if a post returns a 302 status, its ID will be recorded, but 404/403 posts will not be recorded.
 
-爬取过程中会帖子内容，评论，以及评论的用户信息。
+The crawler collects post content, comments, and user information for the comments.
 
-数据库表结构：[表结构源码](./v2ex_scrapy/items.py)
+Database table structure: [Table structure source code](./v2ex_scrapy/items.py)
 
-注1：爬了一半才发现V站帖子附言没有爬，附言从`topic_id = 448936`才会爬取
+Note 1: I realized halfway through that I missed crawling post scripts, which will be crawled starting from `topic_id = 448936`.
 
-注2：select count(*) from member 得到的用户数比较小，大概20W，是因为爬取过程中是根据评论，以及发帖信息爬取用户的，如果一个用户注册之后既没有评论也没有发帖，那么这个账号就爬不到。还有就是因为部分帖子访问不了，也可能导致部分账号没有爬。还有部分用户号被删除，这一部分也没有爬。（代码改了，可以爬，但是都已经爬完了……）
+Note 2: The total number of users obtained from `select count(*) from member` is relatively small, about 200,000. This is because users are crawled based on comments and posts. If a user has neither commented nor posted anything, their account won't be crawled. Some posts may not be accessible, which can also lead to some accounts not being crawled. Additionally, some accounts may have been deleted, and those weren't crawled either.
 
-注3：时间均为UTC+0的秒数
+Note 3: All times are in UTC+0 in seconds.
 
-注4：数据库除了主键，和唯一索引，没有加其他索引。
+Note 4: Apart from primary keys and unique indexes, there are no other indexes in the database.
 
-## 运行
+## Running the Crawler
 
-确保python >=3.10
+Ensure that you have Python >= 3.10
 
-### 安装依赖
+### Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 配置
+### Configuration
 
-默认的并发数设置成了1，如需更改修改`CONCURRENT_REQUESTS`
+The default concurrency is set to 1. If you want to change it, modify `CONCURRENT_REQUESTS`.
 
 #### Cookie
 
-部分帖子和部分帖子信息需要登录才能爬取，可以设置Cookie来登录，修改 `v2ex_scrapy/settings.py`中 `COOKIES`的值
+Some posts and certain post-related information require login to be crawled. You can set a Cookie to log in by modifying the `COOKIES` value in `v2ex_scrapy/settings.py`.
 
 ```python
 COOKIES = """
@@ -56,71 +57,75 @@ a=b;c=d;e=f
 """
 ```
 
-#### 代理
+#### Proxies
 
-更改 `v2ex_scrapy/settings.py` 中 `PROXIES`的值 如
+To change `PROXIES` in `v2ex_scrapy/settings.py`, use the following format:
 
 ```python
 [
-     "http://127.0.0.1:7890"
+    "http://127.0.0.1:7890"
 ]
 ```
 
-请求会随机选择一个代理，如果需要更高级的代理方式可以使用第三方库，或者自行实现Middleware
+Requests will randomly select a proxy. For more advanced proxy management, you can use third-party libraries or implement middleware yourself.
 
-#### LOG
+#### Log
 
-默认关闭了写入Log文件的功能，如需开启修改`v2ex_scrapy\settings.py`中的这行`# LOG_FILE = "v2ex_scrapy.log"`配置文件，取消注释
+Logging to a file is disabled by default. If you want to enable it, uncomment the following line in `v2ex_scrapy/settings.py`:
 
-### 运行爬虫
+```python
+# LOG_FILE = "v2ex_scrapy.log"
+```
 
-爬取全站帖子
+### Run the Crawler
+
+Crawl all posts on the entire website:
 
 ```bash
 scrapy crawl v2ex
 ```
 
-爬取指定节点帖子，如果node-name为空则爬flamewar
+Crawl posts from a specific node. If `node-name` is empty, it will crawl from the "flamewar" node:
 
 ```bash
 scrapy crawl v2ex-node ${node-name}
 ```
 
-> `scrapy: command not found` 说明没有添加python包的安装位置到环境变量
+If you encounter a `scrapy: command not found` error, it means that the Python package installation path has not been added to your environment variables.
 
-### 接着上次爬
+### Continue from Where It Left Off
 
-直接运行爬取的命令即可，会自动继续爬。会自动跳过已经爬过的帖子
+Just run the crawling command, and it will automatically continue crawling. It will skip the posts that have already been crawled.
 
 ```bash
 scrapy crawl v2ex
 ```
 
-### 注意事项
+### Notes
 
-爬取过程中出现403基本上是因为IP被限制了，等待一段时间即可
+If you encounter a 403 error during crawling, it's likely due to IP restrictions. In such cases, wait for some time and try again.
 
-代码更新后不能继续用我之前的数据库爬了。表结构改了，topic_content爬取的内容改为完整的HTML而不是只有文本内容。
+After code updates, you cannot continue using your old database. The table structure has changed, and now `topic_content` retrieves the complete HTML instead of just the text content.
 
-## 统计分析
+## Data Analysis
 
-统计用的SQL在[query.sql](query.sql)这个文件下，图表的源码在[analysis.py](analysis.py)
+The SQL queries for statistics are in the [query.sql](query.sql) file, and the source code for generating charts is in [analysis.py](analysis.py).
 
-第一次的分析见 <https://www.v2ex.com/t/954480>
+The first analysis can be found at <https://www.v2ex.com/t/954480>
 
-水深火热见<https://oldshensheep.github.io/v2ex_scrapy>
+For more detailed data, I suggest downloading the database.
 
-### 帖子、评论和用户数量统计
+### Statistics of Posts, Comments, and Users
 
-帖子总数：801,038 （80万）  
-评论总数：10,899,382 （1000万）  
-用户总数：194,534 （20万）异常原因见爬取相关数据说明的注2  
+Total posts: 801,038 (800,000)
+Total comments: 10,899,382 (10 million)
+Total users: 194,534 (200,000) - See Note 2 in the Explanation of Crawled Data
 
-### 获得感谢最多的评论
+### Top Comments by Gratitude
 
-因为部分评论内容较多不方便展示，要查看内容可以点击链接。或者下载数据库使用SQL查询，SQL查询文件也包含在开源文件中
+Gratitude count is too large to display the full content. You can click on the links or download the database to query using SQL. The SQL queries are also included in the open-source files.
 
-| 评论链接 | 感谢数 |
+| Comment Link | Gratitude Count |
 | :--- | :--- |
 | [https://www.v2ex.com/t/820687#r_11150263](https://www.v2ex.com/t/820687#r_11150263) | 316 |
 | [https://www.v2ex.com/t/437760#r_5432223](https://www.v2ex.com/t/437760#r_5432223) | 297 |
@@ -133,9 +138,9 @@ scrapy crawl v2ex
 | [https://www.v2ex.com/t/749163#r_10129442](https://www.v2ex.com/t/749163#r_10129442) | 217 |
 | [https://www.v2ex.com/t/877829#r_12070911](https://www.v2ex.com/t/877829#r_12070911) | 216 |
 
-### 正向投票最多的帖子
+### Most Upvoted Posts
 
-| 帖子链接 | 标题 | 票数 |
+| Post Link | Title | Votes |
 | :--- | :--- | :--- |
 | [https://www.v2ex.com/t/110327](https://www.v2ex.com/t/110327) | UP n DOWN vote in V2EX | 321 |
 | [https://www.v2ex.com/t/295433](https://www.v2ex.com/t/295433) | Snipaste - 开发了三年的截图工具，但不只是截图 | 274 |
@@ -148,9 +153,9 @@ scrapy crawl v2ex
 | [https://www.v2ex.com/t/427796](https://www.v2ex.com/t/427796) | 隔壁组的小兵集体情愿 要炒了 team leader | 123 |
 | [https://www.v2ex.com/t/534800](https://www.v2ex.com/t/534800) | 使用 Github 账号登录 黑客派 之后， Github 自动 follow | 112 |
 
-### 点击次数最多的帖子
+### Most Viewed Posts
 
-| 帖子链接 | 标题 | 点击数 |
+| Post Link | Title | Views |
 | :--- | :--- | :--- |
 | [https://www.v2ex.com/t/510849](https://www.v2ex.com/t/510849) | chrome 签到插件 \[魂签\] 更新啦 | 39,452,510 |
 | [https://www.v2ex.com/t/706595](https://www.v2ex.com/t/706595) | 迫于搬家 ··· 继续出 700 本书\~ 四折 非技术书还剩 270 多本· | 2,406,584 |
@@ -163,9 +168,9 @@ scrapy crawl v2ex
 | [https://www.v2ex.com/t/308080](https://www.v2ex.com/t/308080) | Element UI——一套基于 Vue 2.0 的桌面端组件库 | 221,099 |
 | [https://www.v2ex.com/t/295433](https://www.v2ex.com/t/295433) | Snipaste - 开发了三年的截图工具，但不只是截图 | 210,675 |
 
-### 发送评论最多的用户
+### Users with Most Comments
 
-| 用户 | 评论数 |
+| User | Comment Count |
 | :--- | :--- |
 | [Livid](https://www.v2ex.com/member/Livid) | 19559 |
 | [loading](https://www.v2ex.com/member/loading) | 19190 |
@@ -178,9 +183,9 @@ scrapy crawl v2ex
 | [opengps](https://www.v2ex.com/member/opengps) | 9694 |
 | [est](https://www.v2ex.com/member/est) | 9532 |
 
-### 发送帖子最多的用户
+### Users with Most Posts
 
-| 用户 | 主题数 |
+| User | Topic Count |
 | :--- | :--- |
 | [Livid](https://www.v2ex.com/member/Livid) | 6974 |
 | [icedx](https://www.v2ex.com/member/icedx) | 722 |
@@ -193,25 +198,25 @@ scrapy crawl v2ex
 | [Newyorkcity](https://www.v2ex.com/member/Newyorkcity) | 553 |
 | [WildCat](https://www.v2ex.com/member/WildCat) | 544 |
 
-## 曲线
+## Curves
 
-需要详细的数据，建议下载数据库
+For detailed data, I recommend downloading the database.
 
-### 每月新用户数折线图
+### Line Chart for New Users per Month
 
 ![1688470374959](image/t/1688470374959.png)
 
-### 每月新帖子数折线图
+### Line Chart for New Posts per Month
 
 ![1688469358680](image/t/1688469358680.png)
 
-### 评论数折线图
+### Line Chart for Comment Count
 
 ![1688470738877](image/t/1688470738877.png)
 
-### 使用次数最多的节点
+### Most Frequently Used Nodes
 
-| 节点 | 次数 |
+| Node | Count |
 | :--- | :--- |
 | [qna](https://www.v2ex.com/go/qna) | 188011 |
 | [all4all](https://www.v2ex.com/go/all4all) | 103254 |
@@ -224,9 +229,9 @@ scrapy crawl v2ex
 | [python](https://www.v2ex.com/go/python) | 14124 |
 | [career](https://www.v2ex.com/go/career) | 13170 |
 
-### 使用次数最多的tag （tag为v2ex自动生成）
+### Most Frequently Used Tags (auto-generated by V2EX)
 
-| tag | 次数 |
+| Tag | Count |
 | :--- | :--- |
 | [开发](https://www.v2ex.com/tag/%E5%BC%80%E5%8F%91) | 16414 |
 | [App](https://www.v2ex.com/tag/App) | 13240 |
