@@ -66,3 +66,11 @@ class DB:
         if result is None or result[0] is None:
             return 0
         return int(result[0])
+
+    def get_comment_count_by_topic(self, topic_id) -> int:
+        result = self.session.execute(
+            text("select count(*) from comment where topic_id = :q"), {"q": topic_id}
+        ).fetchone()
+        if result is None or result[0] is None:
+            return 0
+        return int(result[0])
