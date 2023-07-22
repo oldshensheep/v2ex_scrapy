@@ -6,13 +6,13 @@ from v2ex_scrapy.items import TopicItem
 from v2ex_scrapy.spiders.CommonSpider import CommonSpider
 
 
-class V2exTopicSpider(scrapy.Spider):
+class V2exSpider(scrapy.Spider):
     name = "v2ex"
     FORCE_UPDATE_TOPIC = False
     UPDATE_COMMENT = True
 
-    def __init__(self, name=None, **kwargs):
-        super().__init__(name, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.db = DB()
         self.start_id = 1
         self.end_id = 1000000

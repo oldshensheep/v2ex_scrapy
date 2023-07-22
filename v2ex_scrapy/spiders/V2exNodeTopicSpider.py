@@ -10,7 +10,7 @@ from v2ex_scrapy.spiders.CommonSpider import CommonSpider
 from v2ex_scrapy import utils
 
 
-class V2exTopicSpider(scrapy.Spider):
+class V2exNodeTopicSpider(scrapy.Spider):
     name = "v2ex-node"
 
     UPDATE_TOPIC_WHEN_REPLY_CHANGE = True
