@@ -5,6 +5,7 @@
 
 # useful for handling different item types with a single interface
 
+import logging
 import random
 import time
 
@@ -12,8 +13,9 @@ import scrapy
 import scrapy.http.response.html
 from scrapy import signals
 from scrapy.exceptions import IgnoreRequest
-from v2ex_scrapy.DB import DB, LogItem
+
 from v2ex_scrapy import utils
+from v2ex_scrapy.DB import DB, LogItem
 
 
 class TutorialScrapySpiderMiddleware:
@@ -70,6 +72,7 @@ class ProxyAndCookieDownloaderMiddleware:
     def __init__(self):
         self.proxies: list[str] = []
         self.cookies: dict[str, str] = {}
+        self.logger = logging.getLogger(__name__)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -102,6 +105,7 @@ class ProxyAndCookieDownloaderMiddleware:
     ):
         # Called with the response returned from the downloader.
         if response.status == 403:
+            self.logger.info(f"skip url:{response.url}, because 403")
             raise IgnoreRequest(f"403 url {response.url}")
         # Must either;
         # - return a Response object
@@ -123,7 +127,7 @@ class ProxyAndCookieDownloaderMiddleware:
         self.proxies = spider.settings.get("PROXIES", [])  # type: ignore
 
         cookie_str = spider.settings.get("COOKIES", "")
-        self.cookies = utils.cookie_str2cookie_dict(cookie_str) # type: ignore
+        self.cookies = utils.cookie_str2cookie_dict(cookie_str)  # type: ignore
 
         spider.logger.info("Spider opened: %s" % spider.name)
 

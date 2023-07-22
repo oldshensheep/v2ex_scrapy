@@ -43,7 +43,7 @@ class TutorialScrapyPipeline:
 
     def process_it(self, items: list[ItemsType]):
         if len(items) > 0 and isinstance(items[0], MemberItem):
-            self.process_members(items)
+            self.process_members(items) # type: ignore
         else:
             self.db.session.add_all(items)
             self.db.session.commit()
