@@ -4,9 +4,13 @@
 
 学习scrapy写的一个小爬虫
 
-数据都放在了sqlite数据库，方便分享，整个数据库大小2.1GB。
+数据都放在了sqlite数据库，方便分享，整个数据库大小3.7GB。
 
 在GitHub我 release 了完整的sqlite数据库文件
+
+**数据库更新：2023-07-22-full**
+
+包含全部帖子数据（水深火热在内），同时帖子和评论的内容不再只爬取文本内容，而是爬取原始的HTML，同时topic增加了单独的reply_count，comment增加了no
 
 ## 不建议自行运行爬虫，数据已经有了
 
@@ -18,19 +22,9 @@
 
 爬虫从`topic_id = 1`开始爬，路径为`https://www.v2ex.com/t/{topic_id}`。 服务器可能返回404/403/302/200，如果是404说明帖子被删除了，如果是403说明是爬虫被限制了，302一般是跳转到登陆页面，有的也是跳转到主页，200返回正常页面。
 
-爬虫没有登陆，所以爬取的数据不完全，比如水下火热的帖子就没有爬到，还有就是如果是302的帖子会记录帖子id，404/403不会记录。
-
 爬取过程中会帖子内容，评论，以及评论的用户信息。
 
 数据库表结构：[表结构源码](./v2ex_scrapy/items.py)
-
-注1：爬了一半才发现V站帖子附言没有爬，附言从`topic_id = 448936`才会爬取
-
-注2：select count(*) from member 得到的用户数比较小，大概20W，是因为爬取过程中是根据评论，以及发帖信息爬取用户的，如果一个用户注册之后既没有评论也没有发帖，那么这个账号就爬不到。还有就是因为部分帖子访问不了，也可能导致部分账号没有爬。还有部分用户号被删除，这一部分也没有爬。（代码改了，可以爬，但是都已经爬完了……）
-
-注3：时间均为UTC+0的秒数
-
-注4：数据库除了主键，和唯一索引，没有加其他索引。
 
 ## 运行
 
@@ -74,16 +68,22 @@ a=b;c=d;e=f
 
 ### 运行爬虫
 
-爬取全站帖子
+爬取全站帖子、用户信息和评论
 
 ```bash
 scrapy crawl v2ex
 ```
 
-爬取指定节点帖子，如果node-name为空则爬flamewar
+爬取指定节点帖子、用户信息和评论，如果node-name为空则爬flamewar
 
 ```bash
-scrapy crawl v2ex-node ${node-name}
+scrapy crawl v2ex-node node=${node-name}
+```
+
+爬取用户信息，从uid=1开始爬到uid=635000
+
+```bash
+scrapy crawl v2ex-member start_id=${start_id} end_id=${end_id}
 ```
 
 > `scrapy: command not found` 说明没有添加python包的安装位置到环境变量
@@ -100,11 +100,9 @@ scrapy crawl v2ex
 
 爬取过程中出现403基本上是因为IP被限制了，等待一段时间即可
 
-代码更新后不能继续用我之前的数据库爬了。表结构改了，topic_content爬取的内容改为完整的HTML而不是只有文本内容。
-
 ## 统计分析
 
-统计用的SQL在[query.sql](query.sql)这个文件下，图表的源码在[analysis.py](analysis.py)
+统计用的SQL在[query.sql](query.sql)这个文件下，图表的源码在[analysis](analysis)这个子项目下，包含一个分析数据导出到JSON的Python脚本和一个前端展示项目
 
 第一次的分析见 <https://www.v2ex.com/t/954480>
 

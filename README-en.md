@@ -1,41 +1,35 @@
 [中文](./README.md) | English
 Translated by ChatGPT
 
-# A Web Crawler for v2ex.com
+# A web crawler for v2ex.com
 
-This is a small crawler I wrote to scrape data from the v2ex.com website using the Scrapy framework.
+A small crawler written to learn scrapy.
 
-The data is stored in an SQLite database, making it convenient for sharing. The entire database size is 2.1GB.
+The data is stored in an SQLite database for easy sharing, with a total database size of 3.7GB.
 
 I have released the complete SQLite database file on GitHub.
 
-## Note: I do not recommend running the crawler again, as the data is already available
+**Database Update: 2023-07-22-full**
 
-The crawling process took several dozen hours. If you crawl too fast, your IP may be banned, and I didn't use a proxy pool. Setting the concurrency to 3 allows you to crawl continuously.
+It contains all post data, including hot topics. Both post and comment content are now scraped in their original HTML format. Additionally, the "topic" has a new field "reply_count," and "comment" has a new field "no."
+
+## It is not recommended to run the crawler as the data is already available
+
+The crawling process took several dozen hours because rapid crawling can result in IP banning, and I didn't use a proxy pool. Setting the concurrency to 3 should allow for continuous crawling.
 
 [Download the database](https://github.com/oldshensheep/v2ex_scrapy/releases)
 
 ## Explanation of Crawled Data
 
-The crawler starts crawling from `topic_id = 1`, with the path as `https://www.v2ex.com/t/{topic_id}`. The server may return 404/403/302/200 status codes. If it's 404, the post has been deleted. If it's 403, the crawler is restricted. A 302 is usually a redirect to a login page or homepage, while 200 indicates a normal page.
+The crawler starts crawling from `topic_id = 1`, and the path is `https://www.v2ex.com/t/{topic_id}`. The server might return 404/403/302/200 status codes. A 404 indicates that the post has been deleted, 403 indicates that the crawler has been restricted, 302 is usually a redirection to the login page or homepage, and 200 indicates a normal page.
 
-Since the crawler doesn't log in, the data collected may not be complete. For example, some popular posts with many replies might not have been crawled. Additionally, if a post returns a 302 status, its ID will be recorded, but 404/403 posts will not be recorded.
-
-The crawler collects post content, comments, and user information for the comments.
+The crawler fetches post content, comments, and user information during the crawling process.
 
 Database table structure: [Table structure source code](./v2ex_scrapy/items.py)
 
-Note 1: I realized halfway through that I missed crawling post scripts, which will be crawled starting from `topic_id = 448936`.
+## Running
 
-Note 2: The total number of users obtained from `select count(*) from member` is relatively small, about 200,000. This is because users are crawled based on comments and posts. If a user has neither commented nor posted anything, their account won't be crawled. Some posts may not be accessible, which can also lead to some accounts not being crawled. Additionally, some accounts may have been deleted, and those weren't crawled either.
-
-Note 3: All times are in UTC+0 in seconds.
-
-Note 4: Apart from primary keys and unique indexes, there are no other indexes in the database.
-
-## Running the Crawler
-
-Ensure that you have Python >= 3.10
+Ensure Python version is >=3.10
 
 ### Install Dependencies
 
@@ -45,11 +39,11 @@ pip install -r requirements.txt
 
 ### Configuration
 
-The default concurrency is set to 1. If you want to change it, modify `CONCURRENT_REQUESTS`.
+The default concurrency is set to 1. To change it, modify `CONCURRENT_REQUESTS`.
 
 #### Cookie
 
-Some posts and certain post-related information require login to be crawled. You can set a Cookie to log in by modifying the `COOKIES` value in `v2ex_scrapy/settings.py`.
+Some posts and post information require login for crawling. You can set a Cookie to log in. Modify the `COOKIES` value in `v2ex_scrapy/settings.py`:
 
 ```python
 COOKIES = """
@@ -57,45 +51,51 @@ a=b;c=d;e=f
 """
 ```
 
-#### Proxies
+#### Proxy
 
-To change `PROXIES` in `v2ex_scrapy/settings.py`, use the following format:
+Change the value of `PROXIES` in `v2ex_scrapy/settings.py`, for example:
 
 ```python
 [
-    "http://127.0.0.1:7890"
+     "http://127.0.0.1:7890"
 ]
 ```
 
-Requests will randomly select a proxy. For more advanced proxy management, you can use third-party libraries or implement middleware yourself.
+Requests will randomly choose one of the proxies. If you need a more advanced proxy method, you can use a third-party library or implement Middleware yourself.
 
-#### Log
+#### LOG
 
-Logging to a file is disabled by default. If you want to enable it, uncomment the following line in `v2ex_scrapy/settings.py`:
+The writing of Log files is disabled by default. To enable it, uncomment this line in `v2ex_scrapy\settings.py`:
 
 ```python
-# LOG_FILE = "v2ex_scrapy.log"
+LOG_FILE = "v2ex_scrapy.log"
 ```
 
 ### Run the Crawler
 
-Crawl all posts on the entire website:
+Crawl all posts, user information, and comments on the entire site:
 
 ```bash
 scrapy crawl v2ex
 ```
 
-Crawl posts from a specific node. If `node-name` is empty, it will crawl from the "flamewar" node:
+Crawl posts, user information, and comments for a specific node. If node-name is empty, it crawls "flamewar":
 
 ```bash
-scrapy crawl v2ex-node ${node-name}
+scrapy crawl v2ex-node node=${node-name}
 ```
 
-If you encounter a `scrapy: command not found` error, it means that the Python package installation path has not been added to your environment variables.
+Crawl user information, starting from uid=1 and crawling up to uid=635000:
 
-### Continue from Where It Left Off
+```bash
+scrapy crawl v2ex-member start_id=${start_id} end_id=${end_id}
+```
 
-Just run the crawling command, and it will automatically continue crawling. It will skip the posts that have already been crawled.
+> If you see `scrapy: command not found`, it means the Python package installation path has not been added to the environment variable.
+
+### Resuming the Crawl
+
+Simply run the crawl command again, and it will automatically continue crawling, skipping the posts that have already been crawled:
 
 ```bash
 scrapy crawl v2ex
@@ -103,13 +103,11 @@ scrapy crawl v2ex
 
 ### Notes
 
-If you encounter a 403 error during crawling, it's likely due to IP restrictions. In such cases, wait for some time and try again.
+If you encounter a 403 error during the crawling process, it is likely due to IP restrictions. Wait for a while before trying again.
 
-After code updates, you cannot continue using your old database. The table structure has changed, and now `topic_content` retrieves the complete HTML instead of just the text content.
+## Statistical Analysis
 
-## Data Analysis
-
-The SQL queries for statistics are in the [query.sql](query.sql) file, and the source code for generating charts is in [analysis.py](analysis.py).
+The SQL queries used for statistics can be found in the [query.sql](query.sql) file, and the source code for the charts is in the [analysis](analysis) subproject. It includes a Python script for exporting data to JSON for analysis and a frontend display project.
 
 The first analysis can be found at <https://www.v2ex.com/t/954480>
 
